@@ -109,3 +109,21 @@ func (self *TString) SetTt(a lu_byte) {
 func (self *TString) SetMarked(a lu_byte) {
 	self.marked = a
 }
+func (self *LClosure) Next() GCObject {
+	return self.next
+}
+func (self *LClosure) Tt() lu_byte {
+	return self.tt
+}
+func (self *LClosure) Marked() lu_byte {
+	return self.marked
+}
+func (self *LClosure) SetNext(a GCObject) {
+	self.next = a
+}
+func (self *LClosure) SetTt(a lu_byte) {
+	self.tt = a
+}
+func (self *LClosure) SetMarked(a lu_byte) {
+	self.marked = a
+}

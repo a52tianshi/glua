@@ -1,5 +1,21 @@
 package main
 
+const (
+	//Possible states of the Garbage Collector
+	GCSpropagate  = 0
+	GCSatomic     = 1
+	GCSswpallgc   = 2
+	GCSswpfinobj  = 3
+	GCSswptobefnz = 4
+	GCSswpend     = 5
+	GCScallfin    = 6
+	GCSpause      = 7
+)
+
+func keepinvariant(g *global_State) bool {
+	return g.gcstate <= GCSatomic
+}
+
 func bitmask(b lu_byte) lu_byte       { return 1 << b }
 func bit2mask(b1, b2 lu_byte) lu_byte { return bitmask(b1) | bitmask(b2) }
 
@@ -45,4 +61,10 @@ func luaC_condGC(L *lua_State, pre, pos int) {
 /* more often than not, 'pre'/'pos' are empty */
 func luaC_checkGC(L *lua_State) {
 	luaC_condGC(L, 0, 0)
+}
+
+func luaC_upvalbarrier(L *lua_State, uv *UpVal) {
+	if iscollectable(uv.v) && !upisopen(uv) {
+		luaC_upvalbarrier_(L, uv)
+	}
 }

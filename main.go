@@ -145,6 +145,7 @@ func pushline(L *lua_State, firstline int) int {
 func addreturn(L *lua_State) int {
 	var line string = lua_tostring(L, -1)
 	var retline string = lua_pushfstring(L, "return %s;", line)
+	fmt.Println("cqadd", line, retline)
 	var status int = luaL_loadbuffer(L, retline, size_t(len(retline)), "=stdin")
 	if status == LUA_OK {
 		lua_remove(L, -2) /* remove modified line */
@@ -170,9 +171,11 @@ func loadline(L *lua_State) int {
 		return -1 /* no input */
 	}
 	status = addreturn(L)
-	//  if ((status = addreturn(L)) != LUA_OK)  /* 'return ...' did not work? */
-	//    status = multiline(L);  /* try as command, maybe with continuation lines */
+	if status != LUA_OK { /* 'return ...' did not work? */
+		//status = multiline(L) /* try as command, maybe with continuation lines */
+	}
 	lua_remove(L, 1) /* remove line from the stack */
+	fmt.Printf("cqtest %d\n", lua_gettop(L))
 	assert(lua_gettop(L) == 1)
 	return status
 }

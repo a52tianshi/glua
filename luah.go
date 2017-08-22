@@ -59,6 +59,7 @@ const (
 
 type lua_CFunction func(L *lua_State) int
 type lua_KFunction func(L *lua_State, status int, ctx ptrdiff_t) int
+type lua_Reader func(L *lua_State, ud interface{}, sz *size_t) string
 type lua_Hook func(L *lua_State, ar *lua_Debug)
 type lua_Debug struct {
 	event           int

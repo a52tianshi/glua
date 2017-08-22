@@ -58,7 +58,7 @@ type global_State struct {
 	l_registry   TValue
 	seed         uint
 	currentwhite lu_byte
-	//	gcstate      lu_byte
+	gcstate      lu_byte
 	//	gckind       lu_byte
 	gcrunning lu_byte
 	allgc     GCObject
@@ -111,6 +111,10 @@ type lua_State struct {
 }
 
 /* macros to convert a GCObject into a specific value */
+func gco2lcl(o GCObject) *LClosure {
+	assert(o.Tt() == LUA_TLCL)
+	return o.(*LClosure)
+}
 func gco2t(o GCObject) *Table {
 	assert(o.Tt() == LUA_TTABLE)
 	return o.(*Table)

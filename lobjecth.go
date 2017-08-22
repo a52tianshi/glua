@@ -110,6 +110,9 @@ func ttislightuserdata(o *TValue) bool {
 func ttistable(o *TValue) bool {
 	return checktag(o, ctb(LUA_TTABLE))
 }
+func ttisLclosure(o *TValue) bool {
+	return checktag(o, ctb(LUA_TLCL))
+}
 func ttislcf(o *TValue) bool {
 	return checktag(o, LUA_TLCF)
 }
@@ -126,6 +129,10 @@ func gcvalue(o *TValue) GCObject {
 func pvalue(o *TValue) interface{} {
 	assert(ttislightuserdata(o))
 	return o.value_.p
+}
+func clLvalue(o *TValue) *LClosure {
+	assert(ttisLclosure(o))
+	return gco2lcl(o.value_.gc)
 }
 func fvalue(o *TValue) lua_CFunction {
 	assert(ttislcf(o))
@@ -186,6 +193,11 @@ func sethvalue(L *lua_State, obj *TValue, x *Table) {
 	settt_(io, ctb(LUA_TTABLE))
 	checkliveness(L, io)
 }
+func setobj(L *lua_State, obj1 *TValue, obj2 *TValue) {
+	var io1 *TValue = obj1
+	*io1 = *(obj2)
+	checkliveness(L, io1)
+}
 
 type StkId *TValue /* index to stack elements */
 
@@ -213,6 +225,38 @@ type TString struct {
 //不检验extra
 func getstr(ts *TString) string {
 	return ts.data
+}
+
+/*
+** Function Prototypes
+ */
+
+type Proto struct {
+	CommonHeader
+	numparams    lu_byte
+	is_vararg    lu_byte
+	maxstacksize lu_byte
+	sizeupvalues int
+	sizek        int
+	sizecode     int
+	sizelineinfo int
+	//...
+}
+
+/*
+** Closures
+ */
+
+type ClosureHeader struct {
+	CommonHeader
+	nupvalues lu_byte
+	gclist    *GCObject
+}
+
+type LClosure struct {
+	ClosureHeader
+	p      *Proto
+	upvals [1]*UpVal //[1];  /* list of upvalues */
 }
 
 /*

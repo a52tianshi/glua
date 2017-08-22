@@ -11,3 +11,7 @@ type UpVal struct {
 		value TValue
 	}
 }
+
+func upisopen(up *UpVal) bool {
+	return up.v != &up.u.value
+}

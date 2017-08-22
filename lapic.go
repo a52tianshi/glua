@@ -323,10 +323,26 @@ func lua_pcallk(L *lua_State, nargs, nresults, errfunc int, ctx ptrdiff_t, k lua
 	return status
 }
 
-func lua_load(L *lua_State, reader lua_Reader, data interface{}, chuckname string, mode string) int {
+func lua_load(L *lua_State, reader lua_Reader, data interface{}, chunkname string, mode string) int {
 	var z ZIO
 	var status int
 	lua_lock(L)
+	if chunkname == "" {
+		chunkname = "?"
+	}
+	luaZ_init(L, &z, reader, data)
+	status = luaD_protectedparser(L, &z, chunkname, mode)
+	if status == LUA_OK { /* no errors? */
+		var f *LClosure = clLvalue(&L.stack[L.top-1])
+		if f.nupvalues >= 1 { /* does it have an upvalue? */
+			/* get global table from registry */
+			var reg *Table = hvalue(&L.l_G.l_registry)
+			var gt *TValue = luaH_getint(reg, LUA_RIDX_GLOBALS)
+			/* set global table as 1st upvalue of 'f' (may be LUA_ENV) */
+			setobj(L, f.upvals[0].v, gt)
+			luaC_upvalbarrier(L, f.upvals[0])
+		}
+	}
 	lua_unlock(L)
 	return status
 }

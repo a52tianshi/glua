@@ -9,3 +9,6 @@ package main
 //#define val_(o)		((o)->value_)   直接拆开不用宏
 
 //luaC_newobj 改写
+
+//luaO_pushvfstring
+//markobject

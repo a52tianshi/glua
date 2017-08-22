@@ -123,3 +123,46 @@ func luaD_pcall(L *lua_State, Func Pfunc, u interface{}, old_top ptrdiff_t, ef p
 	L.errfunc = old_errfunc
 	return status
 }
+
+/*
+** Execute a protected parser.
+ */
+//词法解析
+type SParser struct {
+	z    *ZIO
+	buff Mbuffer /* dynamic structure used by the scanner */
+	dyd  Dyndata /* dynamic structures used by the parser */
+	mode string
+	name string
+}
+
+func f_parser(L *lua_State, ud interface{}) {
+	fmt.Println("cqwdadsa")
+	var cl *LClosure
+	var p *SParser = ud.(*SParser)
+	var c int = zgetc(p.z) /* read first character */
+	fmt.Println("cq", c, cl)
+	assert(false)
+}
+func luaD_protectedparser(L *lua_State, z *ZIO, name string, mode string) int {
+	var p SParser
+	var status int
+	L.nny++ /* cannot yield during parsing */ //不能释放协程
+	p.z = z
+	p.name = name
+	p.mode = mode
+	p.dyd.actvar.arr = nil
+	p.dyd.actvar.size = 0
+	p.dyd.gt.arr = nil
+	p.dyd.gt.size = 0
+	p.dyd.label.arr = nil
+	p.dyd.label.size = 0
+	luaZ_initbuffer(L, &p.buff)
+	status = luaD_pcall(L, f_parser, &p, savestack(L, L.top), L.errfunc)
+	luaZ_freebuffer(L, &p.buff)
+	//	luaM_freearray(L, p.dyd.actvar.arr, p.dyd.actvar.size)
+	//	luaM_freearray(L, p.dyd.gt.arr, p.dyd.gt.size)
+	//	luaM_freearray(L, p.dyd.label.arr, p.dyd.label.size)
+	L.nny--
+	return status
+}
