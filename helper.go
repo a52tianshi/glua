@@ -12,6 +12,17 @@ const (
 	EXIT_FAILURE = 1
 )
 
+//strchr
+func strchr(a string, c byte) int {
+	temp := []byte(a)
+	for i, k := range temp {
+		if k == c {
+			return i
+		}
+	}
+	return -1
+}
+
 //strlen
 func strlen(a []byte) size_t {
 	for i, v := range a {

@@ -111,6 +111,10 @@ type lua_State struct {
 }
 
 /* macros to convert a GCObject into a specific value */
+func gco2ts(o GCObject) *TString {
+	assert(novariant(int(o.Tt())) == LUA_TSTRING)
+	return o.(*TString)
+}
 func gco2lcl(o GCObject) *LClosure {
 	assert(o.Tt() == LUA_TLCL)
 	return o.(*LClosure)

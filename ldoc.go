@@ -42,6 +42,11 @@ func luaD_rawrunprotected(L *lua_State, f Pfunc, ud interface{}) (ret int) {
 	return ret
 }
 
+func luaD_inctop(L *lua_State) {
+	luaD_checkstack(L, 1)
+	L.top++
+}
+
 func next_ci(L *lua_State) *CallInfo {
 	if L.ci.next != nil {
 		L.ci = L.ci.next
@@ -136,12 +141,23 @@ type SParser struct {
 	name string
 }
 
+func checkmode(L *lua_State, mode, x string) {
+	if mode != "" && strchr(mode, []byte(x)[0]) == -1 {
+		luaO_pushfstring(L, "attempt to load a %s chunk (mode is '%s')", x, mode)
+		panic(LUA_ERRSYNTAX)
+	}
+}
 func f_parser(L *lua_State, ud interface{}) {
 	fmt.Println("cqwdadsa")
 	var cl *LClosure
 	var p *SParser = ud.(*SParser)
 	var c int = zgetc(p.z) /* read first character */
 	fmt.Println("cq", c, cl)
+	if byte(c) == LUA_SIGNATURE[0] {
+
+	} else {
+		checkmode(L, p.mode, "text")
+	}
 	assert(false)
 }
 func luaD_protectedparser(L *lua_State, z *ZIO, name string, mode string) int {

@@ -95,6 +95,9 @@ func ttnov(o *TValue) int {
 func checktag(o *TValue, t int) bool {
 	return rttype(o) == t
 }
+func checktype(o *TValue, t int) bool {
+	return ttnov(o) == t
+}
 func ttisinteger(o *TValue) bool {
 	return checktag(o, LUA_TNUMINT)
 }
@@ -106,6 +109,9 @@ func ttisboolean(o *TValue) bool {
 }
 func ttislightuserdata(o *TValue) bool {
 	return checktag(o, LUA_TLIGHTUSERDATA)
+}
+func ttisstring(o *TValue) bool {
+	return checktype(o, LUA_TSTRING)
 }
 func ttistable(o *TValue) bool {
 	return checktag(o, ctb(LUA_TTABLE))
@@ -129,6 +135,10 @@ func gcvalue(o *TValue) GCObject {
 func pvalue(o *TValue) interface{} {
 	assert(ttislightuserdata(o))
 	return o.value_.p
+}
+func tsvalue(o *TValue) *TString {
+	assert(ttisstring(o))
+	return gco2ts(o.value_.gc)
 }
 func clLvalue(o *TValue) *LClosure {
 	assert(ttisLclosure(o))
@@ -186,6 +196,13 @@ func setpvalue(obj *TValue, x interface{}) {
 	io.value_.p = x
 	settt_(io, LUA_TLIGHTUSERDATA)
 }
+func setsvalue(L *lua_State, obj *TValue, x *TString) {
+	var io *TValue = obj
+	var x_ *TString = x
+	io.value_.gc = obj2gco(x_)
+	settt_(io, ctb(int(x_.Tt())))
+	checkliveness(L, io)
+}
 func sethvalue(L *lua_State, obj *TValue, x *Table) {
 	var io *TValue = obj
 	var x_ *Table = x
@@ -197,6 +214,9 @@ func setobj(L *lua_State, obj1 *TValue, obj2 *TValue) {
 	var io1 *TValue = obj1
 	*io1 = *(obj2)
 	checkliveness(L, io1)
+}
+func setsvalue2s(L *lua_State, idx int, ts *TString) {
+	setsvalue(L, &L.stack[idx], ts)
 }
 
 type StkId *TValue /* index to stack elements */
@@ -225,6 +245,15 @@ type TString struct {
 //不检验extra
 func getstr(ts *TString) string {
 	return ts.data
+}
+func svalue(o *TValue) string {
+	return getstr(tsvalue(o))
+}
+func tsslen(s *TString) int {
+	return len(s.data)
+}
+func vslen(o *TValue) size_t {
+	return size_t(tsslen(tsvalue(o)))
 }
 
 /*

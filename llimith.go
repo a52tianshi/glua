@@ -19,6 +19,7 @@ type Instruction uint64
 const (
 	LUAI_MAXSHORTLEN = 40
 	MAX_SIZET        = math.MaxUint64
+	MAX_SIZE         = math.MaxUint64
 )
 
 func point2uint(p interface{}) uint {

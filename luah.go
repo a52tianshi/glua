@@ -13,6 +13,9 @@ const (
 	LUA_AUTHORS   = "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
 )
 
+/* mark for precompiled code ('<esc>Lua') */
+const LUA_SIGNATURE = "\x2bLua"
+
 /* option for multiple returns in 'lua_pcall' and 'lua_call' */
 const LUA_MULTRET = (-1)
 
