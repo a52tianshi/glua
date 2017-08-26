@@ -1,5 +1,11 @@
 package main
 
+func next(ls *LexState) {
+	ls.current = zgetc(ls.z)
+}
+func currIsNewline(ls *LexState) bool {
+	return (ls.current == '\n' || ls.current == '\r')
+}
 func luaX_token2str(ls *LexState, token int) string {
 	return ""
 	//	  if (token < FIRST_RESERVED) {  /* single-byte symbols? */
@@ -22,6 +28,16 @@ func lexerror(ls *LexState, msg string, token int) {
 }
 func luaX_syntaxerror(ls *LexState, msg string) {
 	lexerror(ls, msg, ls.t.token)
+}
+func inclinenumber(ls *LexState) {
+	var old int = ls.current
+	assert(currIsNewline(ls))
+	next(ls) /* skip '\n' or '\r' */
+	if currIsNewline(ls) && ls.current != old {
+		next(ls) /* skip '\n\r' or '\r\n' */
+	}
+	//  if (++ls->linenumber >= MAX_INT)
+	//    lexerror(ls, "chunk has too many lines", 0);
 }
 func luaX_setinput(L *lua_State, ls *LexState, z *ZIO, source *TString, firstchar int) {
 	ls.t.token = 0
