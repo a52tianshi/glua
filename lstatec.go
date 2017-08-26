@@ -127,7 +127,7 @@ func lua_newstate(f lua_Alloc, ud interface{}) *lua_State {
 	g = &l.g
 	L.next = nil
 	L.tt = LUA_TTHREAD
-	//  g.currentwhite = bitmask(WHITE0BIT)
+	g.currentwhite = bitmask(WHITE0BIT)
 	//	L.marked = luaC_white(g)
 	preinit_thread(L, g)
 	//  g.frealloc = f

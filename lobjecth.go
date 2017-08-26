@@ -203,6 +203,13 @@ func setsvalue(L *lua_State, obj *TValue, x *TString) {
 	settt_(io, ctb(int(x_.Tt())))
 	checkliveness(L, io)
 }
+func setclLvalue(L *lua_State, obj *TValue, x *LClosure) {
+	var io *TValue = obj
+	var x_ *LClosure = x
+	io.value_.gc = obj2gco(x_)
+	settt_(io, ctb(LUA_TLCL))
+	checkliveness(L, io)
+}
 func sethvalue(L *lua_State, obj *TValue, x *Table) {
 	var io *TValue = obj
 	var x_ *Table = x
@@ -257,19 +264,33 @@ func vslen(o *TValue) size_t {
 }
 
 /*
+** Description of an upvalue for function prototypes
+ */
+type Upvaldesc struct {
+	name    *TString /* upvalue name (for debug information) */
+	instack lu_byte  /* whether it is in stack (register) */
+	idx     lu_byte  /* index of upvalue (in stack or in outer function's list) */
+}
+
+/*
 ** Function Prototypes
  */
 
 type Proto struct {
 	CommonHeader
-	numparams    lu_byte
-	is_vararg    lu_byte
-	maxstacksize lu_byte
-	sizeupvalues int
-	sizek        int
-	sizecode     int
-	sizelineinfo int
+	numparams       lu_byte
+	is_vararg       lu_byte
+	maxstacksize    lu_byte
+	sizeupvalues    int
+	sizek           int
+	sizecode        int
+	sizelineinfo    int
+	linedefined     int
+	lastlinedefined int
+	k               *TValue
 	//...
+	upvalues []Upvaldesc /* upvalue information */
+	source   *TString
 }
 
 /*

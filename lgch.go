@@ -18,6 +18,7 @@ func keepinvariant(g *global_State) bool {
 
 func bitmask(b lu_byte) lu_byte       { return 1 << b }
 func bit2mask(b1, b2 lu_byte) lu_byte { return bitmask(b1) | bitmask(b2) }
+func testbits(x, m lu_byte) lu_byte   { return x & m }
 
 const (
 	WHITE0BIT     = 0
@@ -28,6 +29,9 @@ const (
 
 var WHITEBITS = bit2mask(WHITE0BIT, WHITE1BIT)
 
+func iswhite(x GCObject) bool {
+	return testbits(x.Marked(), WHITEBITS) != 0
+}
 func otherwhite(g *global_State) lu_byte {
 	return g.currentwhite ^ WHITEBITS
 }

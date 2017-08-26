@@ -9,7 +9,7 @@ func pushstr(L *lua_State, str string, l size_t) {
 ** this function handles only '%d', '%c', '%f', '%p', and '%s'
    conventional formats, plus Lua-specific '%I' and '%U'
 */
-func luaO_pushvfstring(L *lua_State, fmt string, va_list []string) string {
+func luaO_pushvfstring(L *lua_State, fmt string, va_list []interface{}) string {
 	var n int = 0
 	for {
 		//改写
@@ -21,7 +21,7 @@ func luaO_pushvfstring(L *lua_State, fmt string, va_list []string) string {
 		switch []byte(fmt)[idx+1] {
 		case 's':
 			if len(va_list) >= 1 {
-				pushstr(L, va_list[0], size_t(len(va_list[0])))
+				pushstr(L, va_list[0].(string), size_t(len(va_list[0].(string))))
 			} else {
 				pushstr(L, "(null)", size_t(len("(null)")))
 			}
@@ -35,4 +35,7 @@ func luaO_pushvfstring(L *lua_State, fmt string, va_list []string) string {
 		luaV_concat(L, n+1)
 	}
 	return svalue(&L.stack[L.top-1])
+}
+func luaO_pushfstring(L *lua_State, fmt string, argp ...interface{}) string {
+	return luaO_pushvfstring(L, fmt, argp)
 }

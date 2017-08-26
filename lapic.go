@@ -1,9 +1,5 @@
 package main
 
-import (
-	. "fmt"
-)
-
 /* value at a non-valid index */
 var NONVALIDVALUE = luaO_nilobject
 
@@ -200,8 +196,7 @@ func lua_pushlstring(L *lua_State, s []byte, Len size_t) string {
 //func lua_pushvfstring(L *lua_State, fmt string, argp ...string) (ret string) {
 
 //}
-func lua_pushfstring(L *lua_State, fmt string, argp ...string) (ret string) {
-	Println("cqaa", fmt, "sss", argp)
+func lua_pushfstring(L *lua_State, fmt string, argp ...interface{}) (ret string) {
 	lua_lock(L)
 	ret = luaO_pushvfstring(L, fmt, argp)
 	luaC_checkGC(L)

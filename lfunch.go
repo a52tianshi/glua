@@ -1,5 +1,7 @@
 package main
 
+const MAXUPVAL = 255
+
 type UpVal struct {
 	v        *TValue
 	refcount lu_mem

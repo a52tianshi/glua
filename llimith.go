@@ -37,6 +37,8 @@ func api_check(l *lua_State, e bool, msg string) {
 const (
 	STRCACHE_N = 53
 	STRCACHE_M = 2
+
+	LUA_MINBUFFER = 32
 )
 
 /*

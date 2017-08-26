@@ -123,6 +123,10 @@ func gco2t(o GCObject) *Table {
 	assert(o.Tt() == LUA_TTABLE)
 	return o.(*Table)
 }
+func gco2p(o GCObject) *Proto {
+	assert(o.Tt() == LUA_TPROTO)
+	return o.(*Proto)
+}
 
 /* macro to convert a Lua object into a GCObject */
 func obj2gco(v GCObject) GCObject {

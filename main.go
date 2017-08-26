@@ -145,7 +145,8 @@ func pushline(L *lua_State, firstline int) int {
 func addreturn(L *lua_State) int {
 	var line string = lua_tostring(L, -1)
 	var retline string = lua_pushfstring(L, "return %s;", line)
-	fmt.Println("cqadd", line, retline)
+	fmt.Println("cqadd", line)
+	fmt.Println("cqadd", retline)
 	var status int = luaL_loadbuffer(L, retline, size_t(len(retline)), "=stdin")
 	if status == LUA_OK {
 		lua_remove(L, -2) /* remove modified line */
@@ -295,7 +296,7 @@ func pmain(L *lua_State) int {
 	return 1
 }
 func main() {
-	//fmt.Println("hello go lua")
+	//fmt.Println("hello go lua", TK_EOS)
 	var status, result int
 	L := luaL_newstate()
 	if L == nil {

@@ -148,16 +148,18 @@ func checkmode(L *lua_State, mode, x string) {
 	}
 }
 func f_parser(L *lua_State, ud interface{}) {
-	fmt.Println("cqwdadsa")
 	var cl *LClosure
 	var p *SParser = ud.(*SParser)
 	var c int = zgetc(p.z) /* read first character */
-	fmt.Println("cq", c, cl)
+	fmt.Println("cq", c, cl, p.buff)
 	if byte(c) == LUA_SIGNATURE[0] {
 
 	} else {
 		checkmode(L, p.mode, "text")
+		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
+	assert(cl.nupvalues == lu_byte(cl.p.sizeupvalues))
+	luaF_initupvals(L, cl)
 	assert(false)
 }
 func luaD_protectedparser(L *lua_State, z *ZIO, name string, mode string) int {
