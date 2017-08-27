@@ -24,6 +24,15 @@ func luaZ_initbuffer(L *lua_State, buff *Mbuffer) {
 	buff.buffer = nil
 	buff.buffsize = 0
 }
+func luaZ_buffer(buff *Mbuffer) []byte {
+	return buff.buffer
+}
+func luaZ_sizebuffer(buff *Mbuffer) size_t {
+	return buff.buffsize
+}
+func luaZ_bufflen(buff *Mbuffer) size_t {
+	return buff.n
+}
 func luaZ_resetbuffer(buff *Mbuffer) {
 	buff.n = 0
 }

@@ -13,6 +13,7 @@ const (
 	TK_RETURN
 	TK_UNTIL
 	TK_EOS
+	TK_NAME
 )
 
 type SemInfo interface {

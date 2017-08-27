@@ -196,6 +196,11 @@ func setpvalue(obj *TValue, x interface{}) {
 	io.value_.p = x
 	settt_(io, LUA_TLIGHTUSERDATA)
 }
+func setbvalue(obj *TValue, x bool) {
+	var io *TValue = obj
+	io.value_.b = x
+	settt_(io, LUA_TBOOLEAN)
+}
 func setsvalue(L *lua_State, obj *TValue, x *TString) {
 	var io *TValue = obj
 	var x_ *TString = x
@@ -235,8 +240,8 @@ type StkId *TValue /* index to stack elements */
 
 type TString struct {
 	CommonHeader
-	data string
-	//	extra  lu_byte
+	data  string
+	extra lu_byte //cqtest
 	//	shrlen lu_byte
 	//	hash   uint
 	//	u      struct {

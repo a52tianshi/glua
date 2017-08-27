@@ -152,8 +152,10 @@ func mainfunc(ls *LexState, fs *FuncState) {
 	fs.f.is_vararg = 1          /* main function is always declared vararg */
 	init_exp(&v, VLOCAL, 0)     /* create and... */
 	newupvalue(fs, ls.envn, &v) /* ...set environment upvalue */
-	luaX_next(ls)               /* read first token */
-	statlist(ls)                /* parse main body */
+	//assert(false)
+	luaX_next(ls) /* read first token */
+	assert(false)
+	statlist(ls) /* parse main body */
 	assert(false)
 	check(ls, TK_EOS)
 	close_func(ls)
