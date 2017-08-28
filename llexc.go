@@ -50,13 +50,19 @@ func lexerror(ls *LexState, msg string, token int) {
 func luaX_syntaxerror(ls *LexState, msg string) {
 	lexerror(ls, msg, ls.t.token)
 }
+
+/*
+** creates a new string and anchors it in scanner's table so that
+** it will not be collected until the end of the compilation
+** (by that time it should be anchored somewhere)
+ */
 func luaX_newstring(ls *LexState, str string, l size_t) *TString {
 	var L *lua_State = ls.L
 	var o *TValue
 	var ts *TString = luaS_newlstr(L, []byte(str), l)
 	setsvalue2s(L, L.top, ts)
 	L.top++
-	o = luaH_set(L, ls.h, L.top-1)
+	o = luaH_set(L, ls.h, &L.stack[L.top-1])
 	if ttisnil(o) { /* not in use yet? */
 		/* boolean value does not need GC barrier;
 		   table has no metatable, so it does not need to invalidate cache */

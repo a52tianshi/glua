@@ -16,7 +16,10 @@ const (
 	TK_NAME
 )
 
-type SemInfo interface {
+type SemInfo struct {
+	r  lua_Number
+	i  lua_Integer
+	ts *TString
 }
 type Token struct {
 	token   int

@@ -75,6 +75,16 @@ func GetStackByOpPtr(L *lua_State, add int, ptr *TValue) *TValue {
 	return &L.stack[int(align)+add]
 }
 
+func GetNodeByOpPtr(n *Node, nx int) *Node {
+	v0 := unsafe.Pointer(n)
+	size := unsafe.Sizeof(n)
+	ptr := uintptr(v0) + uintptr(size)*uintptr(nx)
+	return (*Node)(unsafe.Pointer(ptr))
+}
+func TValue_Node(v *TValue) *Node {
+	return (*Node)(unsafe.Pointer(v))
+}
+
 //type GCObject interface {
 //	Next() GCObject
 //	Tt() lu_byte

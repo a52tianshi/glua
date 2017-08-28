@@ -41,6 +41,64 @@ func luaH_new(L *lua_State) *Table {
 }
 
 /*
+** inserts a new key into a hash table; first, check whether key's main
+** position is free. If not, check whether colliding node is in its main
+** position or not: if it is not, move colliding node to an empty place and
+** put new key in its main position; otherwise (colliding node is in its main
+** position), new key goes to an empty position.
+ */
+func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
+	var mp *Node
+	//  TValue aux;
+	//  if (ttisnil(key)) luaG_runerror(L, "table index is nil");
+	//  else if (ttisfloat(key)) {
+	//    lua_Integer k;
+	//    if (luaV_tointeger(key, &k, 0)) {  /* does index fit in an integer? */
+	//      setivalue(&aux, k);
+	//      key = &aux;  /* insert it as an integer */
+	//    }
+	//    else if (luai_numisnan(fltvalue(key)))
+	//      luaG_runerror(L, "table index is NaN");
+	//  }
+	//  mp = mainposition(t, key);
+	//  if (!ttisnil(gval(mp)) || isdummy(t)) {  /* main position is taken? */
+	//    Node *othern;
+	//    Node *f = getfreepos(t);  /* get a free place */
+	//    if (f == NULL) {  /* cannot find a free place? */
+	//      rehash(L, t, key);  /* grow table */
+	//      /* whatever called 'newkey' takes care of TM cache */
+	//      return luaH_set(L, t, key);  /* insert key into grown table */
+	//    }
+	//    lua_assert(!isdummy(t));
+	//    othern = mainposition(t, gkey(mp));
+	//    if (othern != mp) {  /* is colliding node out of its main position? */
+	//      /* yes; move colliding node into free position */
+	//      while (othern + gnext(othern) != mp)  /* find previous */
+	//        othern += gnext(othern);
+	//      gnext(othern) = cast_int(f - othern);  /* rechain to point to 'f' */
+	//      *f = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
+	//      if (gnext(mp) != 0) {
+	//        gnext(f) += cast_int(mp - f);  /* correct 'next' */
+	//        gnext(mp) = 0;  /* now 'mp' is free */
+	//      }
+	//      setnilvalue(gval(mp));
+	//    }
+	//    else {  /* colliding node is in its own main position */
+	//      /* new node will go into free position */
+	//      if (gnext(mp) != 0)
+	//        gnext(f) = cast_int((mp + gnext(mp)) - f);  /* chain new position */
+	//      else lua_assert(gnext(f) == 0);
+	//      gnext(mp) = cast_int(f - mp);
+	//      mp = f;
+	//    }
+	//  }
+	//  setnodekey(L, &mp->i_key, key);
+	//  luaC_barrierback(L, t, key);
+	//  lua_assert(ttisnil(gval(mp)));
+	return gval(mp)
+}
+
+/*
 ** search function for integers
  */
 func luaH_getint(t *Table, key lua_Integer) *TValue {
@@ -49,5 +107,56 @@ func luaH_getint(t *Table, key lua_Integer) *TValue {
 		return &t.array[key-1]
 	} else {
 		return luaO_nilobject
+	}
+}
+
+/*
+** "Generic" get version. (Not that generic: not valid for integers,
+** which may be in array part, nor for floats with integral values.)
+ */
+func getgeneric(t *Table, key *TValue) *TValue {
+	var n *Node = mainposition(t, key)
+	for { /* check whether 'key' is somewhere in the chain */
+		if luaV_rawequalobj(gkey(n), key) {
+			return gval(n) /* that's it */
+		} else {
+			var nx int = gnext(n)
+			if nx == 0 {
+				return luaO_nilobject /* not found */
+			}
+			n = GetNodeByOpPtr(n, nx)
+		}
+	}
+}
+
+/*
+** main search function
+ */
+func luaH_get(t *Table, key *TValue) *TValue {
+	switch ttype(key) {
+	//    case LUA_TSHRSTR: return luaH_getshortstr(t, tsvalue(key));
+	//    case LUA_TNUMINT: return luaH_getint(t, ivalue(key));
+	//    case LUA_TNIL: return luaO_nilobject;
+	//    case LUA_TNUMFLT: {
+	//      lua_Integer k;
+	//      if (luaV_tointeger(key, &k, 0)) /* index is int? */
+	//        return luaH_getint(t, k);  /* use specialized version */
+	//      /* else... */
+	//    }  /* FALLTHROUGH */
+	default:
+		return getgeneric(t, key)
+	}
+}
+
+/*
+** beware: when using this function you probably need to check a GC
+** barrier and invalidate the TM cache.
+ */
+func luaH_set(L *lua_State, t *Table, key *TValue) *TValue {
+	var p *TValue = luaH_get(t, key)
+	if p != luaO_nilobject {
+		return p
+	} else {
+		return luaH_newkey(L, t, key)
 	}
 }

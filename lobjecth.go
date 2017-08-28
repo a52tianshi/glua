@@ -46,7 +46,7 @@ type GCObject interface {
 type Value struct { //union
 	gc GCObject
 	p  interface{}
-	b  int
+	b  bool
 	f  lua_CFunction
 	i  lua_Integer
 	n  lua_Number
@@ -152,14 +152,14 @@ func hvalue(o *TValue) *Table {
 	assert(ttistable(o))
 	return gco2t(o.value_.gc)
 }
-func bvalue(o *TValue) int {
+func bvalue(o *TValue) bool {
 	assert(ttisboolean(o))
 	return o.value_.b
 }
 
 /* a dead value may get the 'gc' field, but cannot access its contents */
 func l_isfalse(o *TValue) bool {
-	return ttisnil(o) || (ttisboolean(o) && bvalue(o) == 0)
+	return ttisnil(o) || (ttisboolean(o) && bvalue(o) == false)
 }
 
 func iscollectable(o *TValue) bool {
@@ -339,7 +339,7 @@ type Table struct {
 	node      *Node
 	lastfree  *Node
 	metatable *Table
-	//	gclist    *GCObject
+	gclist    GCObject
 }
 
 /*
