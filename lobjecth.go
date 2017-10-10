@@ -122,6 +122,9 @@ func ttisLclosure(o *TValue) bool {
 func ttislcf(o *TValue) bool {
 	return checktag(o, LUA_TLCF)
 }
+func ttisdeadkey(o *TValue) bool {
+	return checktag((o), LUA_TDEADKEY)
+}
 
 /* Macros to access values */
 func ivalue(o *TValue) lua_Integer {
@@ -336,7 +339,7 @@ type Table struct {
 	lsizenode lu_byte
 	sizearray uint
 	array     []TValue
-	node      *Node
+	node      []Node
 	lastfree  *Node
 	metatable *Table
 	gclist    GCObject
@@ -349,6 +352,12 @@ type Table struct {
 func lmod(s uint, size int) int {
 	assert(size&(size-1) == 0)
 	return int(s & uint(size-1))
+}
+func twoto(x lu_byte) size_t {
+	return size_t(1) << x
+}
+func sizenode(t *Table) size_t {
+	return twoto(t.lsizenode)
 }
 
 /*

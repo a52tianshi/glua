@@ -1,5 +1,8 @@
 package main
 
+func gnode(t *Table, i int) *Node {
+	return &t.node[i]
+}
 func gval(n *Node) *TValue {
 	return &n.i_val
 }

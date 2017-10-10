@@ -12,3 +12,7 @@ func tointeger(o *TValue, i *lua_Integer) int {
 		return luaV_tointeger(o, i, LUA_FLOORN2I)
 	}
 }
+
+func luaV_rawequalobj() {
+
+}

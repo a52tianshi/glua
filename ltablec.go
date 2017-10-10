@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -17,9 +18,47 @@ var dummynode_ Node
 //	dummynode_.i_key.tvk = LUA_TNIL    /* key */
 //}
 
+/*
+** for some types, it is better to avoid modulus by power of 2, as
+** they tend to have many 2 factors.
+ */
+func hashmod(t *Table, n uint) *Node {
+	return gnode(t, int(size_t(n)%((sizenode(t)-1)|1)))
+}
+func hashpointer(t *Table, p GCObject) *Node {
+	return hashmod(t, point2uint(p))
+}
+
+/*
+** returns the 'main' position of an element in a table (that is, the index
+** of its hash value)
+ */
+func mainposition(t *Table, key *TValue) *Node {
+	fmt.Println("main ", ttype(key))
+	switch ttype(key) {
+	//    case LUA_TNUMINT:
+	//      return hashint(t, ivalue(key));
+	//    case LUA_TNUMFLT:
+	//      return hashmod(t, l_hashfloat(fltvalue(key)));
+	//    case LUA_TSHRSTR:
+	//      return hashstr(t, tsvalue(key));
+	//    case LUA_TLNGSTR:
+	//      return hashpow2(t, luaS_hashlongstr(tsvalue(key)));
+	//    case LUA_TBOOLEAN:
+	//      return hashboolean(t, bvalue(key));
+	//    case LUA_TLIGHTUSERDATA:
+	//      return hashpointer(t, pvalue(key));
+	//    case LUA_TLCF:
+	//      return hashpointer(t, fvalue(key));
+	default:
+		assert(!ttisdeadkey(key))
+		return hashpointer(t, gcvalue(key))
+	}
+}
+
 func setnodevector(L *lua_State, t *Table, size uint) {
 	if size == 0 {
-		t.node = dummynode
+		t.node = []Node{*dummynode}
 		t.lsizenode = 0
 		t.lastfree = nil
 	}
