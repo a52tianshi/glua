@@ -98,6 +98,9 @@ func checktag(o *TValue, t int) bool {
 func checktype(o *TValue, t int) bool {
 	return ttnov(o) == t
 }
+func ttisfloat(o *TValue) bool {
+	return checktag(o, LUA_TNUMFLT)
+}
 func ttisinteger(o *TValue) bool {
 	return checktag(o, LUA_TNUMINT)
 }
@@ -130,6 +133,10 @@ func ttisdeadkey(o *TValue) bool {
 func ivalue(o *TValue) lua_Integer {
 	assert(ttisinteger(o))
 	return o.value_.i
+}
+func fltvalue(o *TValue) lua_Number {
+	assert(ttisfloat(o))
+	return o.value_.n
 }
 func gcvalue(o *TValue) GCObject {
 	assert(iscollectable(o))
@@ -230,6 +237,21 @@ func setobj(L *lua_State, obj1 *TValue, obj2 *TValue) {
 	*io1 = *(obj2)
 	checkliveness(L, io1)
 }
+
+/*
+** different types of assignments, according to destination
+ */
+
+/* from stack to (same) stack */
+func setobjs2s(L *lua_State, obj1 *TValue, obj2 *TValue) {
+	setobj(L, obj1, obj2)
+}
+
+/* to stack (not from same stack) */
+func setobj2s(L *lua_State, obj1 *TValue, obj2 *TValue) {
+	setobj(L, obj1, obj2)
+}
+
 func setsvalue2s(L *lua_State, idx int, ts *TString) {
 	setsvalue(L, &L.stack[idx], ts)
 }
@@ -296,6 +318,9 @@ type Proto struct {
 	linedefined     int
 	lastlinedefined int
 	k               *TValue
+	code            *Instruction
+	//...
+	lineinfo []int
 	//...
 	upvalues []Upvaldesc /* upvalue information */
 	source   *TString

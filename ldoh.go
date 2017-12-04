@@ -13,5 +13,8 @@ func luaD_checkstack(L *lua_State, n int) {
 func savestack(L *lua_State, p int) ptrdiff_t {
 	return ptrdiff_t(p) * 8 //sizeof(StkId)
 }
+func restorestack(L *lua_State, n ptrdiff_t) *TValue {
+	return &L.stack[n/8] //sizeof(StkId)
+}
 
 type Pfunc func(L *lua_State, ud interface{})

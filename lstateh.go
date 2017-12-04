@@ -22,8 +22,18 @@ type CallInfo struct {
 	top      int //stack[top] //StkId
 	previous *CallInfo
 	next     *CallInfo
-	//	u          interface{}
-	//	extra      ptrdiff_t
+	u        struct {
+		l struct {
+			base    StkId
+			savedpc *Instruction
+		}
+		c struct {
+			k           lua_KFunction
+			old_errfunc ptrdiff_t
+			ctx         lua_KContext
+		}
+	}
+	extra      ptrdiff_t
 	nresults   int16
 	callstatus uint16
 }

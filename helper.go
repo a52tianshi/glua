@@ -62,6 +62,9 @@ func assert(i interface{}) {
 		}
 	}
 }
+func abort() {
+	os.Exit(1)
+}
 
 //func sizeof(i interface{}) {
 //	return unsafe.Sizeof(i.(type))

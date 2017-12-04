@@ -1,13 +1,12 @@
 package main
 
-const EOZ = -1
+const EOZ = -1 /* end of stream */
 
 func zgetc(z *ZIO) int { /* read first character */
 	if z.n > 0 {
 		z.n--
 		z.p++
-		var temp []byte = z.data.([]byte)
-		return int(temp[z.p-1])
+		return int(z.data.(*LoadS).s[z.p-1])
 	} else {
 		z.n--
 		return luaZ_fill(z)

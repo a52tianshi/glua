@@ -13,6 +13,7 @@ func tointeger(o *TValue, i *lua_Integer) int {
 	}
 }
 
-func luaV_rawequalobj() {
-
+func luaV_rawequalobj(t1 *TValue, t2 *TValue) bool {
+	//test
+	return false
 }

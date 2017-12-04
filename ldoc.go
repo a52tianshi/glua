@@ -16,6 +16,26 @@ type lua_longjmp struct {
 	status   int /* error code */
 }
 
+func luaD_throw(L *lua_State, errcode int) {
+	if L.errorJmp != nil {
+		L.errorJmp.status = errcode
+		LUAI_THROW(L, L.errorJmp)
+	} else {
+		var g *global_State = L.l_G
+		L.status = lu_byte(errcode)
+		if g.mainthread.errorJmp != nil {
+			setobjs2s(L, &g.mainthread.stack[g.mainthread.top], &L.stack[L.top-1])
+			g.mainthread.top++                /* copy error obj. */
+			luaD_throw(g.mainthread, errcode) /* re-throw in main thread */
+		} else {
+			if g.Panic != nil {
+
+			}
+			abort()
+		}
+	}
+}
+
 //妖风写法
 func luaD_rawrunprotected(L *lua_State, f Pfunc, ud interface{}) (ret int) {
 	var oldnCcalls uint16 = L.nCcalls

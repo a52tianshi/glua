@@ -49,3 +49,9 @@ func lua_lock(L *lua_State) {
 }
 func lua_unlock(L *lua_State) {
 }
+func luai_numeq(a, b lua_Number) bool {
+	return a == b
+}
+func luai_numisnan(a lua_Number) bool {
+	return !(luai_numeq(a, a))
+}

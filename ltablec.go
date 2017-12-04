@@ -88,8 +88,18 @@ func luaH_new(L *lua_State) *Table {
  */
 func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 	var mp *Node
-	//  TValue aux;
-	//  if (ttisnil(key)) luaG_runerror(L, "table index is nil");
+	var aux TValue
+	if ttisnil(key) {
+		luaG_runerror(L, "table index is nil")
+	} else if ttisfloat(key) {
+		var k lua_Integer
+		if luaV_tointeger(key, &k, 0) != 0 { /* does index fit in an integer? */
+			setivalue(&aux, k)
+			key = &aux /* insert it as an integer */
+		} else if luai_numisnan(fltvalue(key)) {
+			luaG_runerror(L, "table index is NaN")
+		}
+	}
 	//  else if (ttisfloat(key)) {
 	//    lua_Integer k;
 	//    if (luaV_tointeger(key, &k, 0)) {  /* does index fit in an integer? */

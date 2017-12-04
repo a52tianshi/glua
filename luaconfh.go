@@ -30,4 +30,4 @@ const (
 	LUA_EXTRASPACE = 8 //(sizeof(void *))
 )
 
-//LUA_KCONTEXT ptrdiff_t
+type lua_KContext ptrdiff_t
