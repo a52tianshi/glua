@@ -80,7 +80,7 @@ type global_State struct {
 	//	ephemeron    *GCObject
 	//	allweak      *GCObject
 	//	tobefnz      *GCObject
-	//	fixedgc      *GCObject
+	fixedgc GCObject
 	//	twups        *lua_State
 	//	gcfinnum     uint
 	//	gcpause      int
@@ -88,7 +88,7 @@ type global_State struct {
 	Panic      lua_CFunction
 	mainthread *lua_State
 	version    *lua_Number
-	//	memerrmsg    *TString
+	memerrmsg  *TString
 	//	tmname       [TM_N]*TString
 	//	mt           [LUA_NUMTAGS]*Table
 	strcache [STRCACHE_N][STRCACHE_M]*TString

@@ -16,6 +16,8 @@ func keepinvariant(g *global_State) bool {
 	return g.gcstate <= GCSatomic
 }
 
+//cq changed
+func resetbits(x, m lu_byte) lu_byte  { return x & (^m + 1) }
 func bitmask(b lu_byte) lu_byte       { return 1 << b }
 func bit2mask(b1, b2 lu_byte) lu_byte { return bitmask(b1) | bitmask(b2) }
 func testbits(x, m lu_byte) lu_byte   { return x & m }

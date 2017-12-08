@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"math"
+
+	"github.com/golang/glog"
 )
 
 var dummynode *Node = &dummynode_
@@ -34,7 +35,7 @@ func hashpointer(t *Table, p GCObject) *Node {
 ** of its hash value)
  */
 func mainposition(t *Table, key *TValue) *Node {
-	fmt.Println("main ", ttype(key))
+	glog.Infoln("main ", ttype(key))
 	switch ttype(key) {
 	//    case LUA_TNUMINT:
 	//      return hashint(t, ivalue(key));
@@ -55,12 +56,54 @@ func mainposition(t *Table, key *TValue) *Node {
 		return hashpointer(t, gcvalue(key))
 	}
 }
+func setarrayvector(L *lua_State, t *Table, size uint) {
+	var i uint
+	t.array = make([]TValue, size)
+	//luaM_reallocvector(L, t->array, t->sizearray, size, TValue);
+	for i = t.sizearray; i < size; i++ {
+		setnilvalue(&t.array[i])
+	}
+	t.sizearray = size
+}
 
 func setnodevector(L *lua_State, t *Table, size uint) {
 	if size == 0 {
 		t.node = []Node{*dummynode}
 		t.lsizenode = 0
 		t.lastfree = nil
+	}
+}
+
+func luaH_resize(L *lua_State, t *Table, nasize, nhsize uint) {
+	var i uint
+	var j int
+	var oldasize uint
+	var oldhsize int = allocsizenode(t)
+	var nold []Node = t.node
+	if nasize > oldasize {
+		setarrayvector(L, t, nasize)
+	}
+	setnodevector(L, t, nhsize)
+	if nasize < oldasize {
+		t.sizearray = nasize
+		for i = nasize; i < oldasize; i++ {
+			if !ttisnil(&t.array[i]) {
+				luaH_setint(L, t, lua_Integer(i+1), &t.array[i])
+			}
+		}
+		//luaM_reallocvector(L, t.array, oldasize, nasize, TValue)
+		t.array = make([]TValue, nasize)
+	}
+
+	for j = oldhsize - 1; j >= 0; j-- {
+		var old *Node = &nold[j]
+		if !ttisnil(gval(old)) {
+			setobjt2t(L, luaH_set(L, t, gkey(old)), gval(old))
+		}
+	}
+
+	if oldhsize > 0 {
+		//luaM_freearray(L, nold, size_t(oldhsize))
 	}
 }
 
@@ -89,6 +132,7 @@ func luaH_new(L *lua_State) *Table {
 func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 	var mp *Node
 	var aux TValue
+	glog.Infoln(key)
 	if ttisnil(key) {
 		luaG_runerror(L, "table index is nil")
 	} else if ttisfloat(key) {
@@ -100,16 +144,7 @@ func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 			luaG_runerror(L, "table index is NaN")
 		}
 	}
-	//  else if (ttisfloat(key)) {
-	//    lua_Integer k;
-	//    if (luaV_tointeger(key, &k, 0)) {  /* does index fit in an integer? */
-	//      setivalue(&aux, k);
-	//      key = &aux;  /* insert it as an integer */
-	//    }
-	//    else if (luai_numisnan(fltvalue(key)))
-	//      luaG_runerror(L, "table index is NaN");
-	//  }
-	//  mp = mainposition(t, key);
+	mp = mainposition(t, key)
 	//  if (!ttisnil(gval(mp)) || isdummy(t)) {  /* main position is taken? */
 	//    Node *othern;
 	//    Node *f = getfreepos(t);  /* get a free place */
@@ -143,7 +178,7 @@ func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 	//  }
 	//  setnodekey(L, &mp->i_key, key);
 	//  luaC_barrierback(L, t, key);
-	//  lua_assert(ttisnil(gval(mp)));
+	assert(ttisnil(gval(mp)))
 	return gval(mp)
 }
 
@@ -208,4 +243,17 @@ func luaH_set(L *lua_State, t *Table, key *TValue) *TValue {
 	} else {
 		return luaH_newkey(L, t, key)
 	}
+}
+
+func luaH_setint(L *lua_State, t *Table, key lua_Integer, value *TValue) {
+	var p *TValue = luaH_getint(t, key)
+	var cell *TValue
+	if p != luaO_nilobject {
+		cell = p
+	} else {
+		var k TValue
+		setivalue(&k, key)
+		cell = luaH_newkey(L, t, &k)
+	}
+	setobj2t(L, cell, value)
 }

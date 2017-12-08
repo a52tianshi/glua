@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/golang/glog"
 )
 
 func LUAI_THROW(L *lua_State, c *lua_longjmp) {
@@ -48,7 +48,7 @@ func luaD_rawrunprotected(L *lua_State, f Pfunc, ud interface{}) (ret int) {
 		//err := recover()
 		var err error
 		if err != nil {
-			fmt.Println("err", err)
+			glog.Infoln("err", err)
 			if lj.status == 0 {
 				lj.status = -1
 			}
@@ -143,7 +143,7 @@ func luaD_pcall(L *lua_State, Func Pfunc, u interface{}, old_top ptrdiff_t, ef p
 	L.errfunc = ef
 	status = luaD_rawrunprotected(L, Func, u)
 	if status != LUA_OK {
-		fmt.Println("cqerr")
+		glog.Infoln("cqerr")
 	}
 	L.errfunc = old_errfunc
 	return status
@@ -171,9 +171,9 @@ func f_parser(L *lua_State, ud interface{}) {
 	var cl *LClosure
 	var p *SParser = ud.(*SParser)
 	var c int = zgetc(p.z) /* read first character */
-	fmt.Println("cq", c, cl, p.buff)
+	glog.Infoln("cq", c, cl, p.buff)
 	if byte(c) == LUA_SIGNATURE[0] {
-
+		assert(false)
 	} else {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)

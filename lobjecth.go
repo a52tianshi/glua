@@ -256,6 +256,16 @@ func setsvalue2s(L *lua_State, idx int, ts *TString) {
 	setsvalue(L, &L.stack[idx], ts)
 }
 
+func setobjt2t(L *lua_State, obj1 *TValue, obj2 *TValue) {
+	setobj(L, obj1, obj2)
+}
+
+/* to table (define it as an expression to be used in macros) */
+func setobj2t(L *lua_State, o1 *TValue, o2 *TValue) {
+	*o1 = *o2
+	checkliveness(L, (o1))
+}
+
 type StkId *TValue /* index to stack elements */
 
 /*
@@ -265,14 +275,14 @@ type StkId *TValue /* index to stack elements */
 
 type TString struct {
 	CommonHeader
-	data  string
-	extra lu_byte //cqtest
-	//	shrlen lu_byte
-	//	hash   uint
-	//	u      struct {
-	//		lnglen size_t
-	//		hnext  *TString
-	//	}
+	data   string
+	extra  lu_byte //cqtest
+	shrlen lu_byte
+	hash   uint
+	u      struct {
+		lnglen size_t
+		hnext  *TString
+	}
 }
 
 /*

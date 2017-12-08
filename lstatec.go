@@ -4,6 +4,8 @@ import (
 	//	"fmt"
 	"time"
 	"unsafe"
+
+	"github.com/golang/glog"
 )
 
 const LUAI_GCPAUSE = 200
@@ -72,9 +74,11 @@ func freestack(L *lua_State) {
 func init_registry(L *lua_State, g *global_State) {
 	var temp TValue
 	/* create registry */
+	glog.Infoln(g.allgc)
 	var registry *Table = luaH_new(L)
+	glog.Infoln(g.allgc)
 	sethvalue(L, &g.l_registry, registry)
-	//luaH_resize(L, registry, LUA_RIDX_LAST, 0)
+	luaH_resize(L, registry, LUA_RIDX_LAST, 0)
 	/* registry[LUA_RIDX_MAINTHREAD] = L */
 	//setthvalue(L, &temp, L) /* temp = L */
 	//luaH_setint(L, registry, LUA_RIDX_MAINTHREAD, &temp)
@@ -89,12 +93,15 @@ func init_registry(L *lua_State, g *global_State) {
  */
 func f_luaopen(L *lua_State, ud interface{}) {
 	var g *global_State = L.l_G
+	//glog.Infoln("g", g.allgc)
 	//	UNUSED(ud)
 	stack_init(L, L) /* init stack */
+	glog.Infoln("g", g.allgc)
 	init_registry(L, g)
-	//  luaS_init(L);
+	luaS_init(L)
 	//  luaT_init(L);
-	//  luaX_init(L);
+	glog.Infoln("g", g.allgc)
+	luaX_init(L)
 	g.gcrunning = 1 /* allow gc */
 	//  g->version = lua_version(NULL);
 	//  luai_userstateopen(L);
@@ -136,9 +143,9 @@ func lua_newstate(f lua_Alloc, ud interface{}) *lua_State {
 	//	g.seed = makeseed(L)
 	//	g.gcrunning = 0
 	//	g.GCestimate = 0
-	//	g.strt.size = 0
-	//	g.strt.nuse = 0
-	//	g.strt.hash = nil
+	g.strt.size = 0
+	g.strt.nuse = 0
+	g.strt.hash = nil
 	//	g.l_registry.setnilvalue() // setnilvalue(&g->l_registry);
 	//	g._panic = nil
 	//	g.version = nil

@@ -14,6 +14,16 @@ func gnext(n *Node) int {
 func gkey(n *Node) *TValue {
 	return &n.i_key.tvk
 }
+func isdummy(t *Table) bool {
+	return t.lastfree == nil
+}
+func allocsizenode(t *Table) int {
+	if isdummy(t) {
+		return 0
+	} else {
+		return int(sizenode(t))
+	}
+}
 
 /* returns the key, given the value of a table entry */
 func keyfromval(v *TValue) *TValue {

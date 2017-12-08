@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/golang/glog"
+)
+
 /*
 ** nodes for block list (list of active blocks)
  */
@@ -154,6 +158,7 @@ func mainfunc(ls *LexState, fs *FuncState) {
 	newupvalue(fs, ls.envn, &v) /* ...set environment upvalue */
 	//assert(false)
 	luaX_next(ls) /* read first token */
+	glog.Infoln(ls)
 	assert(false)
 	statlist(ls) /* parse main body */
 	assert(false)

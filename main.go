@@ -1,11 +1,14 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"io"
 	//	"io/ioutil"
 	"os"
 	//	"time"
+	"flag"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -28,7 +31,7 @@ func lua_readline(L *lua_State, b []byte, p string) int {
 	io.WriteString(os.Stdout, p)
 	os.Stdout.Sync() /* show prompt */
 	n, _ := os.Stdin.Read(b)
-	fmt.Println(b[:n], n)
+	glog.Infoln(b[:n], n)
 	return n
 }
 func lua_saveline(L *lua_State, line string) {
@@ -145,8 +148,8 @@ func pushline(L *lua_State, firstline int) int {
 func addreturn(L *lua_State) int {
 	var line string = lua_tostring(L, -1)
 	var retline string = lua_pushfstring(L, "return %s;", line)
-	fmt.Println("cqadd", line)
-	fmt.Println("cqadd", retline)
+	glog.Infoln("cqadd", line)
+	glog.Infoln("cqadd", retline)
 	var status int = luaL_loadbuffer(L, retline, size_t(len(retline)), "=stdin")
 	if status == LUA_OK {
 		lua_remove(L, -2) /* remove modified line */
@@ -176,7 +179,7 @@ func loadline(L *lua_State) int {
 		//status = multiline(L) /* try as command, maybe with continuation lines */
 	}
 	lua_remove(L, 1) /* remove line from the stack */
-	fmt.Printf("cqtest %d\n", lua_gettop(L))
+	glog.Infoln("cqtest %d", lua_gettop(L))
 	assert(lua_gettop(L) == 1)
 	return status
 }
@@ -296,7 +299,8 @@ func pmain(L *lua_State) int {
 	return 1
 }
 func main() {
-	//fmt.Println("hello go lua", TK_EOS)
+	flag.Parse()
+	glog.Infoln("hello go lua", TK_RETURN, TK_EOS, TK_STRING, TK_NAME)
 	var status, result int
 	L := luaL_newstate()
 	if L == nil {

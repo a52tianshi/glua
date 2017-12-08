@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/golang/glog"
 )
 
 //内存管理全部重写
@@ -17,8 +17,8 @@ func luaM_newobject(L *lua_State, tag int) GCObject {
 	case LUA_TPROTO:
 		return new(Proto)
 	default:
-		fmt.Println(tag)
-		fmt.Println("cqtest fail")
+		glog.Infoln(tag)
+		glog.Infoln("cqtest fail")
 		return nil
 	}
 }

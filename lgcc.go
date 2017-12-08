@@ -1,5 +1,12 @@
 package main
 
+import (
+	"github.com/golang/glog"
+)
+
+func white2gray(x GCObject) {
+	x.SetMarked(resetbits(x.Marked(), WHITEBITS))
+}
 func markobject(g *global_State, t GCObject) {
 
 }
@@ -19,7 +26,19 @@ func luaC_upvalbarrier_(L *lua_State, uv *UpVal) {
 	}
 }
 
+func luaC_fix(L *lua_State, o GCObject) {
+	var g *global_State = L.l_G
+	glog.Infoln(g.allgc, o)
+	glog.Infoln(o)
+	assert(g.allgc == o) /* object must be 1st in 'allgc' list! */
+	white2gray(o)        /* they will be gray forever */
+	g.allgc = o.Next()   /* remove object from 'allgc' list */
+	o.SetNext(g.fixedgc) /* link it to 'fixedgc' list */
+	g.fixedgc = o
+}
+
 func luaC_newobj(L *lua_State, tt int) GCObject {
+	glog.Infoln("func", tt)
 	var g *global_State = L.l_G
 	var o GCObject = luaM_newobject(L, novariant(tt))
 	o.SetMarked(luaC_white(g))

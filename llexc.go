@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/golang/glog"
 )
 
 func next(ls *LexState) {
@@ -10,6 +10,17 @@ func next(ls *LexState) {
 func currIsNewline(ls *LexState) bool {
 	return (ls.current == '\n' || ls.current == '\r')
 }
+
+var luaX_tokens []string = []string{
+	"and", "break", "do", "else", "elseif",
+	"end", "false", "for", "function", "goto", "if",
+	"in", "local", "nil", "not", "or", "repeat",
+	"return", "then", "true", "until", "while",
+	"//", "..", "...", "==", ">=", "<=", "~=",
+	"<<", ">>", "::", "<eof>",
+	"<number>", "<integer>", "<name>", "<string>",
+}
+
 func save_and_next(ls *LexState) {
 	save(ls, ls.current)
 	next(ls)
@@ -27,6 +38,18 @@ func save(ls *LexState, c int) {
 	b.buffer[luaZ_bufflen(b)] = byte(c)
 	b.n++
 }
+
+func luaX_init(L *lua_State) {
+	//var i int
+	var e *TString = luaS_newliteral(L, LUA_ENV)
+	luaC_fix(L, obj2gco(e))
+	for i := 0; i < NUM_RESERVED; i++ {
+		var ts *TString = luaS_new(L, luaX_tokens[i])
+		luaC_fix(L, obj2gco(ts))  /* reserved words are never collected */
+		ts.extra = lu_byte(i + 1) /* reserved word */
+	}
+}
+
 func luaX_token2str(ls *LexState, token int) string {
 	return ""
 	//	  if (token < FIRST_RESERVED) {  /* single-byte symbols? */
@@ -99,7 +122,8 @@ func luaX_setinput(L *lua_State, ls *LexState, z *ZIO, source *TString, firstcha
 }
 func llex(ls *LexState, seminfo *SemInfo) int {
 	luaZ_resetbuffer(ls.buff)
-	fmt.Println("lex", ls.current)
+	glog.Infoln("lex", ls.current)
+
 	for {
 		switch ls.current {
 		case '\n', '\r': /* line breaks */
@@ -117,8 +141,9 @@ func llex(ls *LexState, seminfo *SemInfo) int {
 				ts = luaX_newstring(ls, string(luaZ_buffer(ls.buff)), luaZ_bufflen(ls.buff))
 				seminfo.ts = ts
 				if isreserved(ts) { /* reserved word? */
-					return 1111 //cqtest
+					return int(ts.extra) - 1 + FIRST_RESERVED
 				} else {
+					assert(false)
 					return TK_NAME
 				}
 			} else {

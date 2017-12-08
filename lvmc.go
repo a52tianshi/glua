@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/golang/glog"
 )
 
 func luaV_tointeger(obj *TValue, p *lua_Integer, mode int) int {
@@ -23,7 +23,7 @@ func copy2buff(L *lua_State, top, n int, buff []byte) {
 }
 func luaV_concat(L *lua_State, total int) {
 	assert(total >= 2)
-	fmt.Println("cqq ", L.stack[:L.top])
+	glog.Infoln("cqq ", L.stack[:L.top])
 	for total > 1 {
 		//var top StkId = &L.stack[L.top]
 		var n int = 2 /* number of elements handled in this pass (at least 2) */
