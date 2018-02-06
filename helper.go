@@ -100,72 +100,72 @@ func TValue_Node(v *TValue) *Node {
 func (self *Table) Next() GCObject {
 	return self.next
 }
-func (self *Table) Tt() lu_byte {
+func (self *Table) Tt() byte {
 	return self.tt
 }
-func (self *Table) Marked() lu_byte {
+func (self *Table) Marked() byte {
 	return self.marked
 }
 func (self *Table) SetNext(a GCObject) {
 	self.next = a
 }
-func (self *Table) SetTt(a lu_byte) {
+func (self *Table) SetTt(a byte) {
 	self.tt = a
 }
-func (self *Table) SetMarked(a lu_byte) {
+func (self *Table) SetMarked(a byte) {
 	self.marked = a
 }
 func (self *TString) Next() GCObject {
 	return self.next
 }
-func (self *TString) Tt() lu_byte {
+func (self *TString) Tt() byte {
 	return self.tt
 }
-func (self *TString) Marked() lu_byte {
+func (self *TString) Marked() byte {
 	return self.marked
 }
 func (self *TString) SetNext(a GCObject) {
 	self.next = a
 }
-func (self *TString) SetTt(a lu_byte) {
+func (self *TString) SetTt(a byte) {
 	self.tt = a
 }
-func (self *TString) SetMarked(a lu_byte) {
+func (self *TString) SetMarked(a byte) {
 	self.marked = a
 }
 func (self *LClosure) Next() GCObject {
 	return self.next
 }
-func (self *LClosure) Tt() lu_byte {
+func (self *LClosure) Tt() byte {
 	return self.tt
 }
-func (self *LClosure) Marked() lu_byte {
+func (self *LClosure) Marked() byte {
 	return self.marked
 }
 func (self *LClosure) SetNext(a GCObject) {
 	self.next = a
 }
-func (self *LClosure) SetTt(a lu_byte) {
+func (self *LClosure) SetTt(a byte) {
 	self.tt = a
 }
-func (self *LClosure) SetMarked(a lu_byte) {
+func (self *LClosure) SetMarked(a byte) {
 	self.marked = a
 }
 func (self *Proto) Next() GCObject {
 	return self.next
 }
-func (self *Proto) Tt() lu_byte {
+func (self *Proto) Tt() byte {
 	return self.tt
 }
-func (self *Proto) Marked() lu_byte {
+func (self *Proto) Marked() byte {
 	return self.marked
 }
 func (self *Proto) SetNext(a GCObject) {
 	self.next = a
 }
-func (self *Proto) SetTt(a lu_byte) {
+func (self *Proto) SetTt(a byte) {
 	self.tt = a
 }
-func (self *Proto) SetMarked(a lu_byte) {
+func (self *Proto) SetMarked(a byte) {
 	self.marked = a
 }

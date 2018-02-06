@@ -27,20 +27,17 @@ func ctb(t int) int {
 
 type CommonHeader struct {
 	next   GCObject
-	tt     lu_byte
-	marked lu_byte
+	tt     byte
+	marked byte
 }
 
-//type GCObject struct {
-//	CommonHeader
-//}
 type GCObject interface {
 	Next() GCObject
-	Tt() lu_byte
-	Marked() lu_byte
+	Tt() byte
+	Marked() byte
 	SetNext(GCObject)
-	SetTt(lu_byte)
-	SetMarked(lu_byte)
+	SetTt(byte)
+	SetMarked(byte)
 }
 
 type Value struct { //union
@@ -172,9 +169,8 @@ func l_isfalse(o *TValue) bool {
 	return ttisnil(o) || (ttisboolean(o) && bvalue(o) == false)
 }
 
-func iscollectable(o *TValue) bool {
-	return (rttype(o) & BIT_ISCOLLECTABLE) != 0
-}
+//判断是否是需要gc的类型
+func iscollectable(o *TValue) bool { return (rttype(o) & BIT_ISCOLLECTABLE) != 0 }
 
 /* Macros for internal tests */
 func righttt(obj *TValue) bool {
@@ -184,32 +180,32 @@ func checkliveness(L *lua_State, obj *TValue) {
 	assert(!iscollectable(obj) || (righttt(obj) && (L == nil || !isdead(L.l_G, gcvalue(obj)))))
 }
 
-/* Macros to set values */
+//赋值TValue
 func settt_(o *TValue, t int) {
 	o.tt_ = t
 }
+func setfltvalue(obj *TValue, x lua_Number) {
+	obj.value_.n = x
+	settt_(obj, LUA_TNUMFLT)
+}
 func setivalue(obj *TValue, x lua_Integer) {
-	var io *TValue = obj
-	io.value_.i = x
-	settt_(io, LUA_TNUMINT)
+	obj.value_.i = x
+	settt_(obj, LUA_TNUMINT)
 }
 func setnilvalue(obj *TValue) {
 	settt_(obj, LUA_TNIL)
 }
 func setfvalue(obj *TValue, x lua_CFunction) {
-	var io *TValue = obj
-	io.value_.f = x
-	settt_(io, LUA_TLCF)
+	obj.value_.f = x
+	settt_(obj, LUA_TLCF)
 }
 func setpvalue(obj *TValue, x interface{}) {
-	var io *TValue = obj
-	io.value_.p = x
-	settt_(io, LUA_TLIGHTUSERDATA)
+	obj.value_.p = x
+	settt_(obj, LUA_TLIGHTUSERDATA)
 }
 func setbvalue(obj *TValue, x bool) {
-	var io *TValue = obj
-	io.value_.b = x
-	settt_(io, LUA_TBOOLEAN)
+	obj.value_.b = x
+	settt_(obj, LUA_TBOOLEAN)
 }
 func setsvalue(L *lua_State, obj *TValue, x *TString) {
 	var io *TValue = obj
@@ -276,12 +272,12 @@ type StkId *TValue /* index to stack elements */
 type TString struct {
 	CommonHeader
 	data   string
-	extra  lu_byte //cqtest
-	shrlen lu_byte
+	extra  byte //cqtest
+	shrlen byte
 	hash   uint
 	u      struct {
-		lnglen size_t
-		hnext  *TString
+		lnglen size_t   //长字符串的长度
+		hnext  *TString //指向hash链表
 	}
 }
 
@@ -308,8 +304,8 @@ func vslen(o *TValue) size_t {
  */
 type Upvaldesc struct {
 	name    *TString /* upvalue name (for debug information) */
-	instack lu_byte  /* whether it is in stack (register) */
-	idx     lu_byte  /* index of upvalue (in stack or in outer function's list) */
+	instack byte     /* whether it is in stack (register) */
+	idx     byte     /* index of upvalue (in stack or in outer function's list) */
 }
 
 /*
@@ -318,9 +314,9 @@ type Upvaldesc struct {
 
 type Proto struct {
 	CommonHeader
-	numparams       lu_byte
-	is_vararg       lu_byte
-	maxstacksize    lu_byte
+	numparams       byte
+	is_vararg       byte
+	maxstacksize    byte
 	sizeupvalues    int
 	sizek           int
 	sizecode        int
@@ -342,7 +338,7 @@ type Proto struct {
 
 type ClosureHeader struct {
 	CommonHeader
-	nupvalues lu_byte
+	nupvalues byte
 	gclist    *GCObject
 }
 
@@ -370,8 +366,8 @@ type Node struct {
 
 type Table struct {
 	CommonHeader
-	flags     lu_byte
-	lsizenode lu_byte
+	flags     byte
+	lsizenode byte
 	sizearray uint
 	array     []TValue
 	node      []Node
@@ -388,7 +384,7 @@ func lmod(s uint, size int) int {
 	assert(size&(size-1) == 0)
 	return int(s & uint(size-1))
 }
-func twoto(x lu_byte) size_t {
+func twoto(x byte) size_t {
 	return size_t(1) << x
 }
 func sizenode(t *Table) size_t {

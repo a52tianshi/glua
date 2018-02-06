@@ -95,7 +95,7 @@ func internshrstr(L *lua_State, str []byte, l size_t) *TString {
 		list = &g.strt.hash[lmod(h, g.strt.size)] /* recompute with new size */
 	}
 	ts = createstrobj(L, l, LUA_TSHRSTR, h)
-	ts.shrlen = lu_byte(l)
+	ts.shrlen = byte(l)
 	ts.data = string(str)
 	ts.u.hnext = *list
 	*list = ts

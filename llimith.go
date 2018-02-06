@@ -10,8 +10,6 @@ type lu_mem uint64 //size_t
 type l_mem int64   //ptrdiff_t
 type ptrdiff_t int64
 
-type lu_byte byte
-
 const LUAI_MAXCCALLS = 200
 
 type Instruction uint64

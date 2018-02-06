@@ -16,7 +16,7 @@ func luai_makeseed() uint {
 }
 
 type LX struct {
-	extra_ [LUA_EXTRASPACE]lu_byte
+	extra_ [LUA_EXTRASPACE]byte
 	l      lua_State
 }
 

@@ -22,7 +22,7 @@ func luaD_throw(L *lua_State, errcode int) {
 		LUAI_THROW(L, L.errorJmp)
 	} else {
 		var g *global_State = L.l_G
-		L.status = lu_byte(errcode)
+		L.status = byte(errcode)
 		if g.mainthread.errorJmp != nil {
 			setobjs2s(L, &g.mainthread.stack[g.mainthread.top], &L.stack[L.top-1])
 			g.mainthread.top++                /* copy error obj. */
@@ -136,7 +136,7 @@ func luaD_callnoyield(L *lua_State, Func int, nResults int) {
 func luaD_pcall(L *lua_State, Func Pfunc, u interface{}, old_top ptrdiff_t, ef ptrdiff_t) int {
 	var status int
 	//	var old_ci *CallInfo = L.ci
-	//	var old_allowhooks lu_byte = L.allowhoot
+	//	var old_allowhooks byte = L.allowhoot
 	//	var old_nny uint16 = L.nny
 	var old_errfunc ptrdiff_t = L.errfunc
 
@@ -178,7 +178,7 @@ func f_parser(L *lua_State, ud interface{}) {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
-	assert(cl.nupvalues == lu_byte(cl.p.sizeupvalues))
+	assert(cl.nupvalues == byte(cl.p.sizeupvalues))
 	luaF_initupvals(L, cl)
 	assert(false)
 }

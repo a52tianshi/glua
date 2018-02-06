@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-var luai_ctype_ [math.MaxUint8 + 2]lu_byte = [math.MaxUint8 + 2]lu_byte{
+var luai_ctype_ [math.MaxUint8 + 2]byte = [math.MaxUint8 + 2]byte{
 	0x00,                                           /* EOZ */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0. */
 	0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0x00,

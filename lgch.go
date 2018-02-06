@@ -17,10 +17,10 @@ func keepinvariant(g *global_State) bool {
 }
 
 //cq changed
-func resetbits(x, m lu_byte) lu_byte  { return x & (^m + 1) }
-func bitmask(b lu_byte) lu_byte       { return 1 << b }
-func bit2mask(b1, b2 lu_byte) lu_byte { return bitmask(b1) | bitmask(b2) }
-func testbits(x, m lu_byte) lu_byte   { return x & m }
+func resetbits(x, m byte) byte  { return x & (^m + 1) }
+func bitmask(b byte) byte       { return 1 << b }
+func bit2mask(b1, b2 byte) byte { return bitmask(b1) | bitmask(b2) }
+func testbits(x, m byte) byte   { return x & m }
 
 const (
 	WHITE0BIT     = 0
@@ -34,10 +34,10 @@ var WHITEBITS = bit2mask(WHITE0BIT, WHITE1BIT)
 func iswhite(x GCObject) bool {
 	return testbits(x.Marked(), WHITEBITS) != 0
 }
-func otherwhite(g *global_State) lu_byte {
+func otherwhite(g *global_State) byte {
 	return g.currentwhite ^ WHITEBITS
 }
-func isdeadm(ow lu_byte, m lu_byte) bool {
+func isdeadm(ow byte, m byte) bool {
 	return (m^WHITEBITS)&ow == 0
 }
 func isdead(g *global_State, v GCObject) bool {
@@ -47,7 +47,7 @@ func changewhite(x GCObject) {
 	x.SetMarked(x.Marked() ^ WHITEBITS)
 }
 
-func luaC_white(g *global_State) lu_byte {
+func luaC_white(g *global_State) byte {
 	return g.currentwhite & WHITEBITS
 }
 

@@ -26,7 +26,7 @@ type Labeldesc struct {
 	name    *TString
 	pc      int
 	line    int
-	nactvar lu_byte
+	nactvar byte
 }
 
 /* list of labels or gotos */
@@ -53,7 +53,7 @@ type FuncState struct {
 	ls      *LexState
 	vl      *BlockCnt
 	pc      int
-	nactvar lu_byte
-	nups    lu_byte
-	freereg lu_byte
+	nactvar byte
+	nups    byte
+	freereg byte
 }

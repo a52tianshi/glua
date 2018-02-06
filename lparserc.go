@@ -11,9 +11,9 @@ type BlockCnt struct {
 	previous   *BlockCnt /* chain */
 	firstlabel int       /* index of first label in this block */
 	firstgoto  int       /* index of first pending goto in this block */
-	nactvar    lu_byte   /* # active locals outside the block */
-	upval      lu_byte   /* true if some variable in the block is an upvalue */
-	isloop     lu_byte   /* true if 'block' is a loop */
+	nactvar    byte      /* # active locals outside the block */
+	upval      byte      /* true if some variable in the block is an upvalue */
+	isloop     byte      /* true if 'block' is a loop */
 }
 
 func error_expected(ls *LexState, token int) {

@@ -28,6 +28,8 @@ const (
 	LUA_REGISTRYINDEX = -LUAI_MAXSTACK - 1000
 )
 
+func lua_upvalueindex(i int) int { return LUA_REGISTRYINDEX - i }
+
 //线程状态
 const (
 	LUA_OK        = 0
@@ -53,8 +55,10 @@ const (
 	LUA_TTHREAD        = 8
 	LUA_NUMTAGS        = 9
 
+	//C函数 最小lua可用栈大小
 	LUA_MINSTACK = 20
 
+	//寄存器类型
 	LUA_RIDX_MAINTHREAD = 1
 	LUA_RIDX_GLOBALS    = 2
 	LUA_RIDX_LAST       = LUA_RIDX_GLOBALS
@@ -63,6 +67,12 @@ const (
 type lua_CFunction func(L *lua_State) int
 type lua_KFunction func(L *lua_State, status int, ctx ptrdiff_t) int
 type lua_Reader func(L *lua_State, ud interface{}, sz *size_t) string
+type lua_Writer func(L *lua_State, p uintptr, sz *size_t, ud interface{}) int
+
+/*
+** Type for memory-allocation functions
+ */
+//typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 type lua_Hook func(L *lua_State, ar *lua_Debug)
 type lua_Debug struct {
 	event           int

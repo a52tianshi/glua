@@ -67,10 +67,10 @@ type global_State struct {
 	strt         stringtable
 	l_registry   TValue
 	seed         uint
-	currentwhite lu_byte
-	gcstate      lu_byte
+	currentwhite byte
+	gcstate      byte
 	//	gckind       lu_byte
-	gcrunning lu_byte
+	gcrunning byte
 	allgc     GCObject
 	//	sweepgc      **GCObject
 	//	finobj       *GCObject
@@ -97,7 +97,7 @@ type global_State struct {
 type lua_State struct {
 	CommonHeader
 	nci           uint16
-	status        lu_byte
+	status        byte
 	top           int //StkId  //stack[top]   ///* first free slot in the stack */
 	l_G           *global_State
 	ci            *CallInfo
@@ -117,7 +117,7 @@ type lua_State struct {
 	nny           uint16
 	nCcalls       uint16
 	hookmask      l_signalT
-	allowhoot     lu_byte
+	allowhoot     byte
 }
 
 /* macros to convert a GCObject into a specific value */

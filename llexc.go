@@ -45,8 +45,8 @@ func luaX_init(L *lua_State) {
 	luaC_fix(L, obj2gco(e))
 	for i := 0; i < NUM_RESERVED; i++ {
 		var ts *TString = luaS_new(L, luaX_tokens[i])
-		luaC_fix(L, obj2gco(ts))  /* reserved words are never collected */
-		ts.extra = lu_byte(i + 1) /* reserved word */
+		luaC_fix(L, obj2gco(ts)) /* reserved words are never collected */
+		ts.extra = byte(i + 1)   /* reserved word */
 	}
 }
 
@@ -143,7 +143,7 @@ func llex(ls *LexState, seminfo *SemInfo) int {
 				if isreserved(ts) { /* reserved word? */
 					return int(ts.extra) - 1 + FIRST_RESERVED
 				} else {
-					assert(false)
+					//assert(false)
 					return TK_NAME
 				}
 			} else {
