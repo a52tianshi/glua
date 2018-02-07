@@ -366,13 +366,13 @@ type Node struct {
 
 type Table struct {
 	CommonHeader
-	flags     byte
-	lsizenode byte
+	flags     byte //元方法标记
+	lsizenode byte //取了对数
 	sizearray uint
 	array     []TValue
 	node      []Node
-	lastfree  *Node
-	metatable *Table
+	lastfree  int    //node的索引 -1表示空
+	metatable *Table //元表
 	gclist    GCObject
 }
 

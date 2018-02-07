@@ -12,7 +12,7 @@ const (
 )
 
 type stringtable struct {
-	hash []*TString
+	hash []*TString //hash表
 	nuse int
 	size int
 }
@@ -63,15 +63,15 @@ type global_State struct {
 	totalbytes l_mem
 	GCdebt     l_mem
 	//	GCmemtrav    lu_mem
-	//	GCestimate   lu_mem
+	GCestimate   lu_mem
 	strt         stringtable
 	l_registry   TValue
 	seed         uint
 	currentwhite byte
 	gcstate      byte
-	//	gckind       lu_byte
-	gcrunning byte
-	allgc     GCObject
+	gckind       byte
+	gcrunning    byte
+	allgc        GCObject
 	//	sweepgc      **GCObject
 	//	finobj       *GCObject
 	//	gray         *GCObject

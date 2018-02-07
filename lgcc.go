@@ -28,8 +28,6 @@ func luaC_upvalbarrier_(L *lua_State, uv *UpVal) {
 
 func luaC_fix(L *lua_State, o GCObject) {
 	var g *global_State = L.l_G
-	glog.Infoln(g.allgc, o)
-	glog.Infoln(o)
 	assert(g.allgc == o) /* object must be 1st in 'allgc' list! */
 	white2gray(o)        /* they will be gray forever */
 	g.allgc = o.Next()   /* remove object from 'allgc' list */
@@ -46,4 +44,14 @@ func luaC_newobj(L *lua_State, tt int) GCObject {
 	o.SetNext(g.allgc)
 	g.allgc = o
 	return o
+}
+
+func checkSizes(L *lua_State, g *global_State) {
+	if g.gckind != KGC_EMERGENCY {
+		var olddebt l_mem = g.GCdebt
+		if g.strt.nuse < g.strt.size/4 { /* string table too big? */
+			luaS_resize(L, g.strt.size/2) /* shrink it a little */
+		}
+		g.GCestimate += lu_mem(g.GCdebt - olddebt) /* update estimate */
+	}
 }

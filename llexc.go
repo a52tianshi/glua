@@ -11,6 +11,7 @@ func currIsNewline(ls *LexState) bool {
 	return (ls.current == '\n' || ls.current == '\r')
 }
 
+//保留字
 var luaX_tokens []string = []string{
 	"and", "break", "do", "else", "elseif",
 	"end", "false", "for", "function", "goto", "if",
@@ -40,7 +41,6 @@ func save(ls *LexState, c int) {
 }
 
 func luaX_init(L *lua_State) {
-	//var i int
 	var e *TString = luaS_newliteral(L, LUA_ENV)
 	luaC_fix(L, obj2gco(e))
 	for i := 0; i < NUM_RESERVED; i++ {

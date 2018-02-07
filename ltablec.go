@@ -6,8 +6,14 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	MAXABITS = 7
+	MAXASIZE = 1 << MAXABITS
+	MAXHBITS = MAXABITS - 1
+)
+
 var dummynode *Node = &dummynode_
-var dummynode_ Node
+var dummynode_ Node //go自带初始化
 
 //func init() {
 //	//dummynode_.i_val.value_ = nil      /* value */
@@ -18,6 +24,12 @@ var dummynode_ Node
 //	dummynode_.i_key.tvk = nil         /* key */
 //	dummynode_.i_key.tvk = LUA_TNIL    /* key */
 //}
+func hashpow2(t *Table, n uint) *Node {
+	return gnode(t, lmod(n, int(sizenode(t))))
+}
+func hashint(t *Table, i lua_Integer) *Node {
+	return hashpow2(t, uint(i))
+}
 
 /*
 ** for some types, it is better to avoid modulus by power of 2, as
@@ -30,15 +42,12 @@ func hashpointer(t *Table, p GCObject) *Node {
 	return hashmod(t, point2uint(p))
 }
 
-/*
-** returns the 'main' position of an element in a table (that is, the index
-** of its hash value)
- */
+//返回桶位置
 func mainposition(t *Table, key *TValue) *Node {
 	glog.Infoln("main ", ttype(key))
 	switch ttype(key) {
-	//    case LUA_TNUMINT:
-	//      return hashint(t, ivalue(key));
+	case LUA_TNUMINT:
+		return hashint(t, ivalue(key))
 	//    case LUA_TNUMFLT:
 	//      return hashmod(t, l_hashfloat(fltvalue(key)));
 	//    case LUA_TSHRSTR:
@@ -56,6 +65,35 @@ func mainposition(t *Table, key *TValue) *Node {
 		return hashpointer(t, gcvalue(key))
 	}
 }
+
+func numusearray(t *Table, nums *[MAXABITS + 1]uint) uint {
+	var ttlg uint = 1
+	var ause uint
+	var i uint = 1
+	for lg := 0; lg <= MAXABITS; {
+		var lc uint
+		var lim uint
+		if lim > t.sizearray {
+			lim = t.sizearray
+			if i > lim {
+				break
+			}
+		}
+		/* count elements in range (2^(lg - 1), 2^lg] */
+		for ; i <= lim; i++ {
+			if !ttisnil(&t.array[i-1]) {
+				lc++
+			}
+		}
+		nums[lg] += lc
+		ause += lc
+
+		lg++
+		ttlg *= 2
+	}
+	return ause
+}
+
 func setarrayvector(L *lua_State, t *Table, size uint) {
 	var i uint
 	t.array = make([]TValue, size)
@@ -70,7 +108,22 @@ func setnodevector(L *lua_State, t *Table, size uint) {
 	if size == 0 {
 		t.node = []Node{*dummynode}
 		t.lsizenode = 0
-		t.lastfree = nil
+		t.lastfree = -1
+	} else {
+		var lsize int = luaO_ceillog2(size)
+		if lsize > MAXHBITS {
+			luaG_runerror(L, "table overflow")
+		}
+		size = uint(twoto(byte(lsize)))
+		t.node = make([]Node, size)
+		//for i := 0; i < int(size); i++ {//go默认就是0 不用赋值
+		//var n *Node = gnode(t, i)
+		//n.i_key.nk.next = 0
+		//setnilvalue(n.i_key.nk)
+		//setnilvalue(&n.i_val)
+		//}
+		t.lsizenode = byte(lsize)
+		t.lastfree = int(size)
 	}
 }
 
@@ -108,6 +161,25 @@ func luaH_resize(L *lua_State, t *Table, nasize, nhsize uint) {
 }
 
 /*
+** nums[i] = number of keys 'k' where 2^(i - 1) < k <= 2^i
+ */
+func rehash(L *lua_State, t *Table, ek *TValue) {
+	var asize uint /* optimal size for array part */
+	var na uint    /* number of keys in the array part */
+	var nums [MAXABITS + 1]uint
+	na = numusearray(t, &nums) /* count keys in array part */
+	var totaluse int = int(na) /* all those keys are integer keys */
+	//totaluse += numusehash(t, nums, &na) /* count keys in hash part */
+	/* count extra key */
+	//na += countint(ek, nums)
+	totaluse++
+	/* compute new size for array part */
+	//asize = computesizes(nums, &na)
+	/* resize the table to new computed sizes */
+	luaH_resize(L, t, asize, uint(totaluse)-na)
+}
+
+/*
 ** }=============================================================
  */
 
@@ -121,6 +193,17 @@ func luaH_new(L *lua_State) *Table {
 	setnodevector(L, t, 0)
 	return t
 }
+func getfreepos(t *Table) *Node {
+	if !isdummy(t) {
+		for t.lastfree > 0 {
+			t.lastfree--
+			if ttisnil(gkey(&t.node[t.lastfree])) {
+				return &t.node[t.lastfree]
+			}
+		}
+	}
+	return nil /* 找不到空的桶 */
+}
 
 /*
 ** inserts a new key into a hash table; first, check whether key's main
@@ -129,10 +212,12 @@ func luaH_new(L *lua_State) *Table {
 ** put new key in its main position; otherwise (colliding node is in its main
 ** position), new key goes to an empty position.
  */
+
+//就是插入一个哈希表
 func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 	var mp *Node
 	var aux TValue
-	glog.Infoln(key)
+	glog.Infoln(key, key.TValuefields.tt_)
 	if ttisnil(key) {
 		luaG_runerror(L, "table index is nil")
 	} else if ttisfloat(key) {
@@ -145,37 +230,36 @@ func luaH_newkey(L *lua_State, t *Table, key *TValue) *TValue {
 		}
 	}
 	mp = mainposition(t, key)
-	//  if (!ttisnil(gval(mp)) || isdummy(t)) {  /* main position is taken? */
-	//    Node *othern;
-	//    Node *f = getfreepos(t);  /* get a free place */
-	//    if (f == NULL) {  /* cannot find a free place? */
-	//      rehash(L, t, key);  /* grow table */
-	//      /* whatever called 'newkey' takes care of TM cache */
-	//      return luaH_set(L, t, key);  /* insert key into grown table */
-	//    }
-	//    lua_assert(!isdummy(t));
-	//    othern = mainposition(t, gkey(mp));
-	//    if (othern != mp) {  /* is colliding node out of its main position? */
-	//      /* yes; move colliding node into free position */
-	//      while (othern + gnext(othern) != mp)  /* find previous */
-	//        othern += gnext(othern);
-	//      gnext(othern) = cast_int(f - othern);  /* rechain to point to 'f' */
-	//      *f = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
-	//      if (gnext(mp) != 0) {
-	//        gnext(f) += cast_int(mp - f);  /* correct 'next' */
-	//        gnext(mp) = 0;  /* now 'mp' is free */
-	//      }
-	//      setnilvalue(gval(mp));
-	//    }
-	//    else {  /* colliding node is in its own main position */
-	//      /* new node will go into free position */
-	//      if (gnext(mp) != 0)
-	//        gnext(f) = cast_int((mp + gnext(mp)) - f);  /* chain new position */
-	//      else lua_assert(gnext(f) == 0);
-	//      gnext(mp) = cast_int(f - mp);
-	//      mp = f;
-	//    }
-	//  }
+	if !ttisnil(gval(mp)) || isdummy(t) { /* main position is taken? */
+		var othern *Node
+		var f *Node = getfreepos(t) /* get a free place */
+		if f == nil {               /* cannot find a free place? */
+			rehash(L, t, key) /* grow table */
+			/* whatever called 'newkey' takes care of TM cache */
+			return luaH_set(L, t, key) /* insert key into grown table */
+		}
+		assert(!isdummy(t))
+		othern = mainposition(t, gkey(mp))
+		if othern != mp { /* is colliding node out of its main position? */
+			//      /* yes; move colliding node into free position */
+			//      while (othern + gnext(othern) != mp)  /* find previous */
+			//        othern += gnext(othern);
+			//      gnext(othern) = cast_int(f - othern);  /* rechain to point to 'f' */
+			//      *f = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
+			//      if (gnext(mp) != 0) {
+			//        gnext(f) += cast_int(mp - f);  /* correct 'next' */
+			//        gnext(mp) = 0;  /* now 'mp' is free */
+			//      }
+			//      setnilvalue(gval(mp));
+		} else { /* colliding node is in its own main position */
+			//      /* new node will go into free position */
+			//      if (gnext(mp) != 0)
+			//        gnext(f) = cast_int((mp + gnext(mp)) - f);  /* chain new position */
+			//      else lua_assert(gnext(f) == 0);
+			//      gnext(mp) = cast_int(f - mp);
+			//      mp = f;
+		}
+	}
 	//  setnodekey(L, &mp->i_key, key);
 	//  luaC_barrierback(L, t, key);
 	assert(ttisnil(gval(mp)))

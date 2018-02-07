@@ -15,7 +15,7 @@ func gkey(n *Node) *TValue {
 	return &n.i_key.tvk
 }
 func isdummy(t *Table) bool {
-	return t.lastfree == nil
+	return t.lastfree != -1
 }
 func allocsizenode(t *Table) int {
 	if isdummy(t) {

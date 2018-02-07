@@ -300,7 +300,7 @@ func pmain(L *lua_State) int {
 }
 func main() {
 	flag.Parse()
-	glog.Infoln("hello go lua", TK_RETURN, TK_EOS, TK_STRING, TK_NAME)
+	glog.Infoln("hello go lua", TK_STRING, len(luaX_tokens))
 	var status, result int
 	L := luaL_newstate()
 	if L == nil {
