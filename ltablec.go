@@ -65,14 +65,50 @@ func mainposition(t *Table, key *TValue) *Node {
 		return hashpointer(t, gcvalue(key))
 	}
 }
+func arrayindex(key *TValue) uint {
+	if ttisinteger(key) {
+		var k lua_Integer = ivalue(key)
+		if k > 0 && k <= MAXASIZE {
+			return uint(k)
+		}
+	}
+	return 0
+}
+func computesizes(nums *[MAXABITS + 1]uint, pna *uint) uint {
+	var optimal uint
+	var twotoi uint = 1 /* 2^i */
+	var a uint          /* number of elements smaller than 2^i */
+	var na uint         /* number of elements to go to array part */
+	for i := 0; *pna > twotoi/2; i++ {
+		if nums[i] > 0 {
+			a += nums[i]
+			if a > twotoi/2 {
+				optimal = twotoi
+				na = a
+			}
+		}
 
+		twotoi *= 2
+	}
+	assert((optimal == 0 || (optimal/2) < na) && na <= optimal)
+	*pna = na
+	return optimal
+}
+func countint(key *TValue, nums *[MAXABITS + 1]uint) uint {
+	var k uint = arrayindex(key)
+	if k != 0 { /* is 'key' an appropriate array index? */
+		nums[luaO_ceillog2(k)]++ /* count as such */
+		return 1
+	}
+	return 0
+}
 func numusearray(t *Table, nums *[MAXABITS + 1]uint) uint {
 	var ttlg uint = 1
 	var ause uint
 	var i uint = 1
 	for lg := 0; lg <= MAXABITS; {
 		var lc uint
-		var lim uint
+		var lim uint = ttlg
 		if lim > t.sizearray {
 			lim = t.sizearray
 			if i > lim {
@@ -93,7 +129,20 @@ func numusearray(t *Table, nums *[MAXABITS + 1]uint) uint {
 	}
 	return ause
 }
-
+func numusehash(t *Table, nums *[MAXABITS + 1]uint, pna *uint) int {
+	var totaluse int = 0 /* total number of elements */
+	var ause uint = 0    /* elements added to 'nums' (can go to array part) */
+	var i int = int(sizenode(t)) - 1
+	for ; i > 0; i-- {
+		var n *Node = &t.node[i]
+		if !ttisnil(gval(n)) {
+			ause += countint(gkey(n), nums)
+			totaluse++
+		}
+	}
+	*pna += ause
+	return totaluse
+}
 func setarrayvector(L *lua_State, t *Table, size uint) {
 	var i uint
 	t.array = make([]TValue, size)
@@ -164,17 +213,17 @@ func luaH_resize(L *lua_State, t *Table, nasize, nhsize uint) {
 ** nums[i] = number of keys 'k' where 2^(i - 1) < k <= 2^i
  */
 func rehash(L *lua_State, t *Table, ek *TValue) {
-	var asize uint /* optimal size for array part */
+	var asize uint /* 优化后的size */
 	var na uint    /* number of keys in the array part */
 	var nums [MAXABITS + 1]uint
-	na = numusearray(t, &nums) /* count keys in array part */
-	var totaluse int = int(na) /* all those keys are integer keys */
-	//totaluse += numusehash(t, nums, &na) /* count keys in hash part */
+	na = numusearray(t, &nums)            /* count keys in array part */
+	var totaluse int = int(na)            /* all those keys are integer keys */
+	totaluse += numusehash(t, &nums, &na) /* count keys in hash part */
 	/* count extra key */
-	//na += countint(ek, nums)
+	na += countint(ek, &nums)
 	totaluse++
 	/* compute new size for array part */
-	//asize = computesizes(nums, &na)
+	asize = computesizes(&nums, &na)
 	/* resize the table to new computed sizes */
 	luaH_resize(L, t, asize, uint(totaluse)-na)
 }

@@ -174,13 +174,14 @@ func f_parser(L *lua_State, ud interface{}) {
 	glog.Infoln("cq", c, cl, p.buff)
 	if byte(c) == LUA_SIGNATURE[0] {
 		assert(false)
+		checkmode(L, p.mode, "binary")
+		//cl = luaU_undump(L, p.z, p.name)
 	} else {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
 	assert(cl.nupvalues == byte(cl.p.sizeupvalues))
 	luaF_initupvals(L, cl)
-	assert(false)
 }
 func luaD_protectedparser(L *lua_State, z *ZIO, name string, mode string) int {
 	var p SParser
