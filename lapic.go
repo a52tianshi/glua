@@ -50,7 +50,14 @@ func lua_atpanic(L *lua_State, panicf lua_CFunction) lua_CFunction {
 	lua_unlock(L)
 	return old
 }
-
+func lua_version(L *lua_State) *lua_Number {
+	var version lua_Number = LUA_VERSION_NUM
+	if L == nil {
+		return &version
+	} else {
+		return L.l_G.version
+	}
+}
 func lua_gettop(L *lua_State) int {
 	return L.top - (L.ci.Func + 1)
 }

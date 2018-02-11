@@ -1,6 +1,6 @@
 package main
 
-func luaL_error(L *lua_State, fmt ...string) int {
+func luaL_error(L *lua_State, fmt ...interface{}) int {
 	//  va_list argp;
 	//  va_start(argp, fmt);
 	//  luaL_where(L, 1);
@@ -70,4 +70,15 @@ func luaL_newstate() *lua_State {
 		lua_atpanic(L, Panic)
 	}
 	return L
+}
+func luaL_checkversion_(L *lua_State, ver lua_Number, sz size_t) {
+	var v *lua_Number = lua_version(L)
+	if sz != LUAL_NUMSIZES { /* check numeric types */
+		luaL_error(L, "core and library have incompatible numeric types")
+	}
+	if v != lua_version(nil) {
+		luaL_error(L, "multiple Lua VMs detected")
+	} else if (*v) != ver {
+		luaL_error(L, "version mismatch: app. needs %f, Lua core provides %f", LUAI_UACNUMBER(ver), LUAI_UACNUMBER(*v))
+	}
 }

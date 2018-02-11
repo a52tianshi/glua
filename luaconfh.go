@@ -22,6 +22,7 @@ const (
 	LUA_IDSIZE = 60
 )
 
+type LUAI_UACNUMBER float64
 type lua_Integer int64
 type lua_Number float64
 

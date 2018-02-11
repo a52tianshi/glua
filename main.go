@@ -271,8 +271,8 @@ func pmain(L *lua_State) int {
 	var argv []string = lua_touserdata(L, 2).([]string)
 	var script int
 	var args int = collectargs(argv, &script)
-	//fmt.Println("args", args)
-	//luaL_checkversion(L)
+	glog.Infoln("args", args)
+	luaL_checkversion(L)
 	if argv[0] != "" && argv[0][0] != 0 {
 		progname = argv[0]
 	}
