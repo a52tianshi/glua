@@ -49,6 +49,14 @@ func init_exp(e *expdesc, k expkind, i int) {
 	e.u.ival = lua_Integer(i)
 }
 
+func adjustlocalvars(ls *LexState, nvars int) {
+	var fs *FuncState = ls.fs
+	fs.nactvar = fs.nactvar + byte(nvars)
+	for ; nvars != 0; nvars-- {
+		//getlocvar(fs, fs->nactvar - nvars)->startpc = fs->pc;
+	}
+}
+
 func newupvalue(fs *FuncState, name *TString, v *expdesc) int {
 	var f *Proto = fs.f
 	var oldsize int = f.sizeupvalues

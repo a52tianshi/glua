@@ -299,6 +299,7 @@ func pmain(L *lua_State) int {
 	return 1
 }
 func main() {
+	flag.Set("logtostderr", "true")
 	flag.Parse()
 	glog.Infoln("hello go lua", TK_STRING, len(luaX_tokens), len(LUA_SIGNATURE))
 	var status, result int

@@ -309,6 +309,16 @@ type Upvaldesc struct {
 }
 
 /*
+** 函数中的局部变量
+** (used for debug information)
+ */
+type LocVar struct {
+	varname *TString
+	startpc int /* first point where variable is active */
+	endpc   int /* first point where variable is dead */
+}
+
+/*
 ** Function Prototypes
  */
 
