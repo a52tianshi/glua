@@ -231,6 +231,7 @@ const (
 	has_E     = 16 /* -E */
 )
 
+//检查初始的启动命令参数
 func collectargs(argv []string, first *int) int {
 	var args int = 0
 	var i int
@@ -271,7 +272,6 @@ func pmain(L *lua_State) int {
 	var argv []string = lua_touserdata(L, 2).([]string)
 	var script int
 	var args int = collectargs(argv, &script)
-	glog.Infoln("args", args)
 	luaL_checkversion(L)
 	if argv[0] != "" && argv[0][0] != 0 {
 		progname = argv[0]
@@ -301,7 +301,6 @@ func pmain(L *lua_State) int {
 func main() {
 	flag.Set("logtostderr", "true")
 	flag.Parse()
-	glog.Infoln("hello go lua", TK_STRING, len(luaX_tokens), len(LUA_SIGNATURE))
 	var status, result int
 	L := luaL_newstate()
 	if L == nil {
