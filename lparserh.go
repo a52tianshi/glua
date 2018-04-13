@@ -10,7 +10,14 @@ const (
 type expdesc struct {
 	k expkind
 	u struct {
-		ival lua_Integer
+		ival lua_Integer /* for VKINT */
+		nval lua_Number  /* for VKFLT */
+		info int         /* for generic use */
+		ind  struct {    /* for indexed variables (VINDEXED) */
+			idx int16 /* index (R/K) */
+			t   byte  /* table (register or upvalue) */
+			vt  byte  /* whether 't' is register (VLOCAL) or upvalue (VUPVAL) */
+		}
 	}
 	t int /* patch list of 'exit when true' */
 	f int /* patch list of 'exit when false' */

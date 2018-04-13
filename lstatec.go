@@ -93,14 +93,11 @@ func init_registry(L *lua_State, g *global_State) {
  */
 func f_luaopen(L *lua_State, ud interface{}) {
 	var g *global_State = L.l_G
-	//glog.Infoln("g", g.allgc)
 	//	UNUSED(ud)
 	stack_init(L, L) /* init stack */
-	glog.Infoln("g", g.allgc)
 	init_registry(L, g)
 	luaS_init(L)
 	//  luaT_init(L);
-	glog.Infoln("g", g.allgc)
 	luaX_init(L)
 	g.gcrunning = 1 /* allow gc */
 	//  g->version = lua_version(NULL);

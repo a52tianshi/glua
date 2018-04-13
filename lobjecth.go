@@ -95,6 +95,9 @@ func checktag(o *TValue, t int) bool {
 func checktype(o *TValue, t int) bool {
 	return ttnov(o) == t
 }
+func ttisnumber(o *TValue) bool {
+	return checktype(o, LUA_TNUMBER)
+}
 func ttisfloat(o *TValue) bool {
 	return checktag(o, LUA_TNUMFLT)
 }

@@ -10,6 +10,8 @@ package main
 
 //luaC_newobj 改写
 
+//LUA_NOCVTN2S 不定义  不开启
+
 //luaO_pushvfstring
 //markobject
 //luaY_parser

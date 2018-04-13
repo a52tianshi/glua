@@ -58,7 +58,7 @@ func isLua(ci *CallInfo) bool {
 }
 
 type global_State struct {
-	//	frealloc     lua_Alloc
+	//	frealloc     lua_Alloc  //永不启用因为不会裸申请内存
 	//	ud           interface{}
 	totalbytes l_mem
 	GCdebt     l_mem

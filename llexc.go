@@ -37,7 +37,7 @@ func save(ls *LexState, c int) {
 		luaZ_resizebuffer(ls.L, b, newsize)
 	}
 	b.buffer[luaZ_bufflen(b)] = byte(c)
-	b.n++
+	b.n++ //luaZ_bufflen(b)++
 }
 
 func luaX_init(L *lua_State) {
@@ -47,6 +47,7 @@ func luaX_init(L *lua_State) {
 		var ts *TString = luaS_new(L, luaX_tokens[i])
 		luaC_fix(L, obj2gco(ts)) /* reserved words are never collected */
 		ts.extra = byte(i + 1)   /* reserved word */
+		//ts.extra = byte(234)     /* reserved word */
 	}
 }
 
@@ -138,12 +139,13 @@ func llex(ls *LexState, seminfo *SemInfo) int {
 						break
 					}
 				}
+				glog.Info(string(luaZ_buffer(ls.buff)))
 				ts = luaX_newstring(ls, string(luaZ_buffer(ls.buff)), luaZ_bufflen(ls.buff))
 				seminfo.ts = ts
 				if isreserved(ts) { /* reserved word? */
 					return int(ts.extra) - 1 + FIRST_RESERVED
 				} else {
-					//assert(false)
+					assert(false)
 					return TK_NAME
 				}
 			} else {

@@ -46,6 +46,7 @@ func luaD_rawrunprotected(L *lua_State, f Pfunc, ud interface{}) (ret int) {
 
 	defer func() {
 		//err := recover()
+		//先让它崩溃
 		var err error
 		if err != nil {
 			glog.Infoln("err", err)
@@ -58,7 +59,6 @@ func luaD_rawrunprotected(L *lua_State, f Pfunc, ud interface{}) (ret int) {
 		ret = lj.status
 	}()
 	f(L, ud)
-
 	return ret
 }
 
@@ -139,7 +139,6 @@ func luaD_pcall(L *lua_State, Func Pfunc, u interface{}, old_top ptrdiff_t, ef p
 	//	var old_allowhooks byte = L.allowhoot
 	//	var old_nny uint16 = L.nny
 	var old_errfunc ptrdiff_t = L.errfunc
-
 	L.errfunc = ef
 	status = luaD_rawrunprotected(L, Func, u)
 	if status != LUA_OK {
@@ -171,15 +170,17 @@ func f_parser(L *lua_State, ud interface{}) {
 	var cl *LClosure
 	var p *SParser = ud.(*SParser)
 	var c int = zgetc(p.z) /* read first character */
+
 	glog.Infoln("cq", c, cl, p.buff)
 	if byte(c) == LUA_SIGNATURE[0] {
 		assert(false)
-		checkmode(L, p.mode, "binary")
+		checkmode(L, p.mode, "binary") //暂时不会进入二进制模式(话说我也没见过lua的二进制文本 不常见)
 		//cl = luaU_undump(L, p.z, p.name)
 	} else {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
+	glog.Infoln("cq", c, cl, p.buff)
 	assert(cl.nupvalues == byte(cl.p.sizeupvalues))
 	luaF_initupvals(L, cl)
 }

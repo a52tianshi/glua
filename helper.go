@@ -1,8 +1,10 @@
 package main
 
 import (
+	//"bytes"
 	"os"
 	"runtime/debug"
+	"strings"
 	"unsafe"
 )
 
@@ -32,6 +34,16 @@ func strlen(a []byte) size_t {
 	}
 	return 0
 }
+func strspn(a []byte, b string) int {
+	for i, v := range a {
+		if strings.Contains(b, string([]byte{v})) {
+			continue
+		} else {
+			return i
+		}
+	}
+	return len(a)
+}
 
 //memcmp
 func memcmp(a, b []byte, l size_t) bool {
@@ -50,6 +62,14 @@ func ITE_string(b bool, a string, c string) string {
 		return a
 	}
 	return c
+}
+
+//bool to byte()
+func CQH_BooltoByte(a bool) byte {
+	if a {
+		return 1
+	}
+	return 0
 }
 
 //assert

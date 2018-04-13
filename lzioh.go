@@ -36,7 +36,8 @@ func luaZ_resetbuffer(buff *Mbuffer) {
 	buff.n = 0
 }
 func luaZ_resizebuffer(L *lua_State, buff *Mbuffer, size size_t) {
-	buff.buffer = make([]byte, size)
+	luaM_reallocvchar(L, &buff.buffer, buff.buffsize, size)
+	//buff.buffer = make([]byte, size)
 	buff.buffsize = size
 }
 

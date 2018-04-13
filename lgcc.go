@@ -7,8 +7,26 @@ import (
 func white2gray(x GCObject) {
 	x.SetMarked(resetbits(x.Marked(), WHITEBITS))
 }
+func black2gray(x GCObject) {
+	x.SetMarked(resetbits(x.Marked(), BLACKBIT))
+}
 func markobject(g *global_State, t GCObject) {
 
+}
+
+/*
+** barrier that moves collector backward, that is, mark the black object
+** pointing to a white object as gray again.
+ */
+func luaC_barrier_(L *lua_State, o GCObject, v GCObject) {
+	var g *global_State = L.l_G
+	assert(isblack(o) && iswhite(v) && !isdead(g, v) && !isdead(g, o))
+	if keepinvariant(g) {
+		//reallymarkobject(g, v)
+	} else {
+		//assert(issweepphase(g))
+		//makewhite(g, o)
+	}
 }
 
 /*
@@ -36,7 +54,7 @@ func luaC_fix(L *lua_State, o GCObject) {
 }
 
 func luaC_newobj(L *lua_State, tt int) GCObject {
-	glog.Infoln("func", tt)
+	glog.Infoln("token type", tt)
 	var g *global_State = L.l_G
 	var o GCObject = luaM_newobject(L, novariant(tt))
 	o.SetMarked(luaC_white(g))

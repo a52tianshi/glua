@@ -31,7 +31,6 @@ func lua_readline(L *lua_State, b []byte, p string) int {
 	io.WriteString(os.Stdout, p)
 	os.Stdout.Sync() /* show prompt */
 	n, _ := os.Stdin.Read(b)
-	glog.Infoln(b[:n], n)
 	return n
 }
 func lua_saveline(L *lua_State, line string) {

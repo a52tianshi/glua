@@ -20,6 +20,32 @@ func luaO_ceillog2(x uint) int {
 	}
 	return l + int(log_2[x])
 }
+
+/* maximum length of the conversion of a number to a string */
+const MAXNUMBER2STR = 50
+
+/*
+** 转化 number object 变成 string
+ */
+func luaO_tostring(L *lua_State, obj StkId) {
+	var buff []byte = make([]byte, MAXNUMBER2STR)
+	var len_ size_t
+	assert(ttisnumber(obj))
+	if ttisinteger(obj) {
+		len_ = lua_integer2str(buff, 50 /*sizeof(buff)*/, ivalue(obj))
+	} else {
+		len_ = lua_number2str(buff, 50 /*sizeof(buff)*/, fltvalue(obj))
+		if buff[strspn(buff, "-0123456789")] == 0 { // looks like an int?
+			buff[len_] = lua_getlocaledecpoint()
+			len_++
+			buff[len_] = '0' /* adds '.0' to result */
+			len_++
+		}
+	}
+	//setsvalue2s(L, obj, luaS_newlstr(L, buff, len_))
+	setsvalue(L, obj, luaS_newlstr(L, buff, len_))
+}
+
 func pushstr(L *lua_State, str string, l size_t) {
 	setsvalue2s(L, L.top, luaS_newlstr(L, []byte(str), l))
 	luaD_inctop(L)

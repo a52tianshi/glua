@@ -59,17 +59,18 @@ func adjustlocalvars(ls *LexState, nvars int) {
 
 func newupvalue(fs *FuncState, name *TString, v *expdesc) int {
 	var f *Proto = fs.f
-	var oldsize int = f.sizeupvalues
+	//var oldsize int = f.sizeupvalues
 	checklimit(fs, int(fs.nups+1), MAXUPVAL, "upvalues")
-	//	  luaM_growvector(fs->ls->L, f->upvalues, fs->nups, f->sizeupvalues,
-	//                  Upvaldesc, MAXUPVAL, "upvalues");
-	for ; oldsize < f.sizeupvalues; oldsize++ {
-		f.upvalues[oldsize].name = nil
-	}
-	//  f->upvalues[fs->nups].instack = (v->k == VLOCAL);
-	//  f->upvalues[fs->nups].idx = cast_byte(v->u.info);
-	//  f->upvalues[fs->nups].name = name;
-	//  luaC_objbarrier(fs->ls->L, f, name);
+	glog.Info(f.sizeupvalues)
+	luaM_growvector(fs.ls.L, &f.upvalues, fs.nups, f.sizeupvalues, &Upvaldesc{}, MAXUPVAL, "upvalues")
+	//	for ; oldsize < f.sizeupvalues; oldsize++ {
+	//		f.upvalues[oldsize].name = nil
+	//	}
+	glog.Info(len(f.upvalues), fs.nups)
+	f.upvalues[fs.nups].instack = CQH_BooltoByte(v.k == VLOCAL)
+	f.upvalues[fs.nups].idx = byte(v.u.info)
+	f.upvalues[fs.nups].name = name
+	luaC_objbarrier(fs.ls.L, f, name)
 	fs.nups++
 	return int(fs.nups - 1)
 }
@@ -159,22 +160,19 @@ func statement(ls *LexState) {
 func mainfunc(ls *LexState, fs *FuncState) {
 	var bl BlockCnt
 	var v expdesc
-
 	open_func(ls, fs, &bl)
 	fs.f.is_vararg = 1          /* main function is always declared vararg */
 	init_exp(&v, VLOCAL, 0)     /* create and... */
 	newupvalue(fs, ls.envn, &v) /* ...set environment upvalue */
-	//assert(false)
-	luaX_next(ls) /* read first token */
+	luaX_next(ls)               /* read first token */
 	glog.Infoln(ls)
-	assert(false)
 	statlist(ls) /* parse main body */
-	assert(false)
 	check(ls, TK_EOS)
 	close_func(ls)
 }
 
 func luaY_parser(L *lua_State, z *ZIO, buff *Mbuffer, dyd *Dyndata, name string, firstchar int) *LClosure {
+	glog.Infoln(L.l_G.strt.nuse)
 	var lexstate LexState
 	var funcstate FuncState
 	var cl *LClosure = luaF_newLclosure(L, 1) /* create main closure */

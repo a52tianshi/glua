@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/golang/glog"
+)
+
 /* value at a non-valid index */
 var NONVALIDVALUE = luaO_nilobject
 
@@ -137,8 +141,25 @@ func lua_toboolean(L *lua_State, idx int) int {
 	return 0
 }
 
-func lua_tolstring(L *lua_State, idx int, len *size_t) string {
-	return ""
+func lua_tolstring(L *lua_State, idx int, len_ *size_t) string {
+	var o StkId = index2addr(L, idx)
+	if !ttisstring(o) {
+		if !cvt2str(o) {
+			if len_ != nil {
+				*len_ = 0
+			}
+			return ""
+		}
+		lua_lock(L) /* 'luaO_tostring' may create a new string */
+		luaO_tostring(L, o)
+		luaC_checkGC(L)
+		o = index2addr(L, idx) /* previous call may reallocate the stack */
+		lua_unlock(L)
+	}
+	if len_ != nil {
+		*len_ = vslen(o)
+	}
+	return svalue(o)
 }
 
 func lua_touserdata(L *lua_State, idx int) interface{} {
@@ -193,10 +214,12 @@ func lua_pushlstring(L *lua_State, s []byte, Len size_t) string {
 	} else {
 		ts = luaS_newlstr(L, s, Len)
 	}
-	//setsvalue2s(L, L->top, ts);
+	setsvalue2s(L, L.top, ts)
 	api_incr_top(L)
 	luaC_checkGC(L)
 	lua_unlock(L)
+
+	glog.Info(L.top, L.stack, L.stack[L.top-1].TValuefields.value_.gc.(*TString))
 	return getstr(ts)
 }
 

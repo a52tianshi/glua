@@ -3,6 +3,8 @@ package main
 import (
 	"math"
 	"unsafe"
+
+	"github.com/golang/glog"
 )
 
 const MEMERRMSG = "not enough memory"
@@ -82,9 +84,11 @@ func internshrstr(L *lua_State, str []byte, l size_t) *TString {
 	var g *global_State = L.l_G
 	var h uint = luaS_hash(str, l, g.seed)
 	var list **TString = &g.strt.hash[lmod(h, g.strt.size)]
+	glog.Info(string(str), " ", l, lmod(h, g.strt.size))
 	assert(str != nil)
 	for ts = *list; ts != nil; ts = ts.u.hnext {
 		if l == size_t(ts.shrlen) && string(str) == getstr(ts) {
+			/* 找到! */
 			if isdead(g, ts) {
 				changewhite(ts)
 			}
@@ -96,8 +100,8 @@ func internshrstr(L *lua_State, str []byte, l size_t) *TString {
 		list = &g.strt.hash[lmod(h, g.strt.size)] /* recompute with new size */
 	}
 	ts = createstrobj(L, l, LUA_TSHRSTR, h)
+	ts.data = string(str[:l])
 	ts.shrlen = byte(l)
-	ts.data = string(str)
 	ts.u.hnext = *list
 	*list = ts
 	g.strt.nuse++
@@ -106,7 +110,7 @@ func internshrstr(L *lua_State, str []byte, l size_t) *TString {
 
 func luaS_newlstr(L *lua_State, str []byte, l size_t) *TString {
 	if l <= LUAI_MAXSHORTLEN {
-		return internshrstr(L, str, l)
+		return internshrstr(L, str[:l], l)
 	} else {
 		var ts *TString
 		if l >= MAX_SIZE-size_t(unsafe.Sizeof(*ts)) { //sizeof(TString)
@@ -119,7 +123,20 @@ func luaS_newlstr(L *lua_State, str []byte, l size_t) *TString {
 }
 
 func luaS_new(L *lua_State, str string) *TString {
-	var ret *TString = luaC_newobj(L, LUA_TSTRING).(*TString)
-	ret.data = str
-	return ret
+	var i uint = point2uint(str) % STRCACHE_N /* hash */
+	var j int
+	var p *([2]*TString) = &L.l_G.strcache[i]
+
+	for j = 0; j < STRCACHE_M; j++ {
+		if str == getstr(p[j]) { /* hit? */
+			return p[j] /* that is it */
+		}
+	}
+	/* normal route */
+	for j = STRCACHE_M - 1; j > 0; j-- {
+		p[j] = p[j-1] /* move out last element */
+	}
+	/* new element is first in the list */
+	p[0] = luaS_newlstr(L, []byte(str), size_t(len(str)))
+	return p[0]
 }
