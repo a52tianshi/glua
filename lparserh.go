@@ -58,7 +58,7 @@ type FuncState struct {
 	f       *Proto
 	prev    *FuncState
 	ls      *LexState
-	vl      *BlockCnt
+	bl      *BlockCnt
 	pc      int
 	nactvar byte
 	nups    byte

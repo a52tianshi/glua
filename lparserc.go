@@ -106,8 +106,8 @@ func close_func(ls *LexState) {
 	//  f->sizelocvars = fs->nlocvars;
 	//  luaM_reallocvector(L, f->upvalues, f->sizeupvalues, fs->nups, Upvaldesc);
 	//  f->sizeupvalues = fs->nups;
-	//  lua_assert(fs->bl == NULL);
-	//  ls->fs = fs->prev;
+	assert(fs.bl == nil)
+	ls.fs = fs.prev
 	luaC_checkGC(L)
 }
 
@@ -192,6 +192,7 @@ func luaY_parser(L *lua_State, z *ZIO, buff *Mbuffer, dyd *Dyndata, name string,
 	dyd.label.n = 0
 	luaX_setinput(L, &lexstate, z, funcstate.f.source, firstchar)
 	mainfunc(&lexstate, &funcstate)
+	glog.Info(funcstate.prev, funcstate.nups, lexstate.fs)
 	assert(funcstate.prev == nil && funcstate.nups == 1 && lexstate.fs == nil)
 	/* all scopes should be correctly finished */
 	assert(dyd.actvar.n == 0 && dyd.gt.n == 0 && dyd.label.n == 0)
