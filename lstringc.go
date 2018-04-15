@@ -25,7 +25,9 @@ func luaS_hash(str []byte, l size_t, seed uint) uint {
 func luaS_resize(L *lua_State, newsize int) {
 	var tb *stringtable = &L.l_G.strt
 	if newsize > tb.size {
-		tb.hash = append(tb.hash, make([]*TString, newsize-tb.size)...)
+		//luaM_reallocvector(L, tb->hash, tb->size, newsize, TString *);
+		var tmp = &TString{}
+		luaM_reallocvector(L, &tb.hash, uint(tb.size), uint(newsize), &tmp)
 	}
 	for i := 0; i < tb.size; i++ { /* rehash */
 		var p *TString = tb.hash[i]
@@ -40,9 +42,9 @@ func luaS_resize(L *lua_State, newsize int) {
 	}
 	if newsize < tb.size {
 		assert(tb.hash[newsize] == nil && tb.hash[tb.size-1] == nil)
-		var temp []*TString = make([]*TString, newsize)
-		copy(temp, tb.hash[:newsize])
-		tb.hash = temp
+		//luaM_reallocvector(L, tb->hash, tb->size, newsize, TString *);
+		var tmp = &TString{}
+		luaM_reallocvector(L, &tb.hash, uint(tb.size), uint(newsize), &tmp)
 	}
 	tb.size = newsize
 }

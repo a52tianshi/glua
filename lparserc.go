@@ -76,7 +76,29 @@ func newupvalue(fs *FuncState, name *TString, v *expdesc) int {
 }
 
 func leavelevel(ls *LexState) { ls.L.nCcalls-- }
-
+func leaveblock(fs *FuncState) {
+	var bl *BlockCnt = fs.bl
+	var ls *LexState = fs.ls
+	if bl.previous != nil && bl.upval != 0 {
+		/* create a 'jump to here' to close upvalues */
+		//var j int = luaK_jump(fs)
+		//luaK_patchclose(fs, j, bl.nactvar)
+		//luaK_patchtohere(fs, j)
+	}
+	if bl.isloop != 0 {
+		//breaklabel(ls) /* close pending breaks */
+	}
+	fs.bl = bl.previous
+	//removevars(fs, bl.nactvar)
+	assert(bl.nactvar == fs.nactvar)
+	fs.freereg = fs.nactvar        /* free registers */
+	ls.dyd.label.n = bl.firstlabel /* remove local labels */
+	if bl.previous != nil {        /* inner block? */
+		//movegotosout(fs, bl) /* update pending gotos to outer block */
+	} else if bl.firstgoto < ls.dyd.gt.n { /* pending gotos in outer block? */
+		//undefgoto(ls, &ls.dyd.gt.arr[bl.firstgoto]) /* error */
+	}
+}
 func open_func(ls *LexState, fs *FuncState, bl *BlockCnt) {
 	var f *Proto
 	fs.prev = ls.fs /* linked list of funcstates */
@@ -93,8 +115,8 @@ func close_func(ls *LexState) {
 	var fs *FuncState = ls.fs
 	var f *Proto = fs.f
 	luaK_ret(fs, 0, 0) /* final return */
-	//	  leaveblock(fs);
-	//  luaM_reallocvector(L, f->code, f->sizecode, fs->pc, Instruction);
+	leaveblock(fs)
+	luaM_reallocvector(L, f.code, uint(f.sizecode), uint(fs.pc), Instruction(0))
 	f.sizecode = fs.pc
 	//  luaM_reallocvector(L, f->lineinfo, f->sizelineinfo, fs->pc, int);
 	//  f->sizelineinfo = fs->pc;
@@ -105,7 +127,7 @@ func close_func(ls *LexState) {
 	//  luaM_reallocvector(L, f->locvars, f->sizelocvars, fs->nlocvars, LocVar);
 	//  f->sizelocvars = fs->nlocvars;
 	//  luaM_reallocvector(L, f->upvalues, f->sizeupvalues, fs->nups, Upvaldesc);
-	//  f->sizeupvalues = fs->nups;
+	f.sizeupvalues = int(fs.nups)
 	assert(fs.bl == nil)
 	ls.fs = fs.prev
 	luaC_checkGC(L)

@@ -4,6 +4,11 @@ import (
 	"github.com/golang/glog"
 )
 
+//luaM_realloc_ 封禁不用
+func luaM_reallocv(L *lua_State, b interface{}, on, n int, e interface{}) {
+
+}
+
 const MINSIZEARRAY = 4
 
 //内存管理全部重写
@@ -57,5 +62,31 @@ func luaM_growvector(L *lua_State, v interface{}, nelems byte, size int, type_ i
 		default:
 			assert(false)
 		}
+	}
+}
+func luaM_reallocvector(L *lua_State, v interface{}, oldn, n uint, type_ interface{}) {
+	switch type_.(type) {
+	case Instruction:
+		if n+1 > (MAX_SIZET / 8) {
+			luaM_toobig(L)
+		}
+		var temp []Instruction = make([]Instruction, n)
+		copy(temp, *(v.(*[]Instruction)))
+		*(v.(*[]Instruction)) = temp
+	case **TString:
+		if n+1 > (MAX_SIZET / 8) {
+			luaM_toobig(L)
+		}
+		var temp []*TString = make([]*TString, n)
+		copy(temp, *(v.(*[]*TString)))
+		*(v.(*[]*TString)) = temp
+	case *TValue:
+		if n+1 > (MAX_SIZET / 8) {
+			luaM_toobig(L)
+		}
+		var temp []TValue = make([]TValue, n)
+		copy(temp, *(v.(*[]TValue)))
+		*(v.(*[]TValue)) = temp
+		//cqtest
 	}
 }

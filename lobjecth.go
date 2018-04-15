@@ -337,7 +337,7 @@ type Proto struct {
 	linedefined     int
 	lastlinedefined int
 	k               *TValue
-	code            *Instruction
+	code            []Instruction
 	//...
 	lineinfo []int
 	//...

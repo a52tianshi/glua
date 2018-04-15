@@ -180,7 +180,7 @@ func f_parser(L *lua_State, ud interface{}) {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
-	glog.Infoln("cq", c, cl, p.buff)
+	glog.Infoln("cq", c, cl, p.buff, cl.nupvalues, byte(cl.p.sizeupvalues))
 	assert(cl.nupvalues == byte(cl.p.sizeupvalues))
 	luaF_initupvals(L, cl)
 }

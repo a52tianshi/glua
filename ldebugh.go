@@ -5,7 +5,7 @@ import (
 )
 
 func pcRel(pc *Instruction, p *Proto) int {
-	return int((uintptr(unsafe.Pointer(pc)) - uintptr(unsafe.Pointer(p.code))/8)) - 1
+	return int((uintptr(unsafe.Pointer(pc)) - uintptr(unsafe.Pointer(&p.code[0])))) - 1
 }
 
 func getfuncline(f *Proto, pc int) int {

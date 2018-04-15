@@ -1,5 +1,63 @@
 package main
 
+import (
+	"math"
+)
+
+//基础指令集 格式!
+type OpMode byte
+
+const (
+	iABC OpMode = iota
+	iABx
+	iAsBx
+	iAx
+)
+
+//各种指令集的位数 与偏置(位置)
+const (
+	SIZE_C  = 9
+	SIZE_B  = 9
+	SIZE_Bx = (SIZE_C + SIZE_B)
+	SIZE_A  = 8
+	SIZE_Ax = (SIZE_C + SIZE_B + SIZE_A)
+
+	SIZE_OP = 6
+
+	POS_OP = 0
+	POS_A  = (POS_OP + SIZE_OP)
+	POS_C  = (POS_A + SIZE_A)
+	POS_B  = (POS_C + SIZE_C)
+	POS_Bx = POS_C
+	POS_Ax = POS_A
+)
+
+//LUAI_BITSINT 是32位的 (int 是32位的)所以下面这样定义
+const (
+	MAXARG_Bx  = math.MaxInt32
+	MAXARG_sBx = math.MaxInt32
+)
+
+/* creates a mask with 'n' 1 bits at position 'p' */
+//  n = 4 p = 2
+//   0000111100
+func MASK1(size byte, p byte) Instruction {
+	//	((~((~(Instruction)0)<<(n)))<<(p))
+	return (1<<size - 1) << p
+}
+func MASK0(size byte, p byte) Instruction {
+	return Instruction(math.MaxUint64 - MASK1(size, p))
+}
+func getarg(i Instruction, pos, size byte) int {
+	return int((i >> pos) & MASK1(size, 0))
+}
+func GETARG_Bx(i Instruction) int {
+	return getarg(i, POS_Bx, SIZE_Bx)
+}
+func GETARG_sBx(i Instruction) int {
+	return GETARG_Bx(i) - MAXARG_sBx
+}
+
 type OpCode byte
 
 const (

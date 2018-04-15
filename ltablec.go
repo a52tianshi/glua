@@ -147,6 +147,7 @@ func setarrayvector(L *lua_State, t *Table, size uint) {
 	var i uint
 	t.array = make([]TValue, size)
 	//luaM_reallocvector(L, t->array, t->sizearray, size, TValue);
+	luaM_reallocvector(L, &t.array, t.sizearray, size, &TValue{})
 	for i = t.sizearray; i < size; i++ {
 		setnilvalue(&t.array[i])
 	}
@@ -193,7 +194,9 @@ func luaH_resize(L *lua_State, t *Table, nasize, nhsize uint) {
 				luaH_setint(L, t, lua_Integer(i+1), &t.array[i])
 			}
 		}
+		/* 缩小array */
 		//luaM_reallocvector(L, t.array, oldasize, nasize, TValue)
+		luaM_reallocvector(L, &t.array, oldasize, nasize, &TValue{})
 		t.array = make([]TValue, nasize)
 	}
 

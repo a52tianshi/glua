@@ -38,7 +38,7 @@ type Labeldesc struct {
 
 /* list of labels or gotos */
 type Labellist struct {
-	arr  *Labeldesc
+	arr  []Labeldesc
 	n    int
 	size int
 }
@@ -60,6 +60,7 @@ type FuncState struct {
 	ls      *LexState
 	bl      *BlockCnt
 	pc      int
+	jpc     int
 	nactvar byte
 	nups    byte
 	freereg byte
