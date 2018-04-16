@@ -180,7 +180,7 @@ func f_parser(L *lua_State, ud interface{}) {
 		checkmode(L, p.mode, "text")
 		cl = luaY_parser(L, p.z, &p.buff, &p.dyd, p.name, c)
 	}
-	glog.Infoln("cq", c, cl, p.buff, cl.nupvalues, byte(cl.p.sizeupvalues))
+	glog.Infoln("cq", cl)
 	assert(cl.nupvalues == byte(cl.p.sizeupvalues))
 	luaF_initupvals(L, cl)
 }
@@ -201,8 +201,11 @@ func luaD_protectedparser(L *lua_State, z *ZIO, name string, mode string) int {
 	status = luaD_pcall(L, f_parser, &p, savestack(L, L.top), L.errfunc)
 	luaZ_freebuffer(L, &p.buff)
 	//	luaM_freearray(L, p.dyd.actvar.arr, p.dyd.actvar.size)
+	p.dyd.actvar.arr = nil
 	//	luaM_freearray(L, p.dyd.gt.arr, p.dyd.gt.size)
+	p.dyd.gt.arr = nil
 	//	luaM_freearray(L, p.dyd.label.arr, p.dyd.label.size)
+	p.dyd.label.arr = nil
 	L.nny--
 	return status
 }
