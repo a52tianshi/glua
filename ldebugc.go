@@ -12,10 +12,10 @@ func currentline(ci *CallInfo, L *lua_State) int {
 }
 
 func luaG_addinfo(L *lua_State, msg string, src *TString, line int) string {
-	var buff [LUA_IDSIZE]byte
+	var buff []byte = make([]byte, LUA_IDSIZE)
 	if src != nil {
 		assert(false)
-		//luaO_chunkid(buff, getstr(src), LUA_IDSIZE);
+		luaO_chunkid(buff, []byte(getstr(src)), LUA_IDSIZE)
 	} else { /* no source available; use "?" instead */
 		buff[0] = '?'
 		buff[1] = 0

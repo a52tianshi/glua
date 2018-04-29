@@ -65,11 +65,21 @@ func luaX_token2str(ls *LexState, token int) string {
 	//      return s;
 	//  }
 }
+func txtToken(ls *LexState, token int) []byte {
+	switch token {
+	case TK_NAME, TK_STRING, TK_FLT, TK_INT:
+		save(ls, 0)
+		return []byte(luaO_pushfstring(ls.L, "'%s'", luaZ_buffer(ls.buff)))
+	default:
+		return []byte(luaX_token2str(ls, token))
+	}
+}
 func lexerror(ls *LexState, msg string, token int) {
-	//  msg = luaG_addinfo(ls->L, msg, ls->source, ls->linenumber);
-	//  if (token)
-	//    luaO_pushfstring(ls->L, "%s near %s", msg, txtToken(ls, token));
-	//  luaD_throw(ls->L, LUA_ERRSYNTAX);
+	msg = luaG_addinfo(ls.L, msg, ls.source, ls.linenumber)
+	if token != 0 {
+		luaO_pushfstring(ls.L, "%s near %s", msg, txtToken(ls, token))
+	}
+	luaD_throw(ls.L, LUA_ERRSYNTAX)
 }
 func luaX_syntaxerror(ls *LexState, msg string) {
 	lexerror(ls, msg, ls.t.token)

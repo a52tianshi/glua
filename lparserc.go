@@ -118,8 +118,8 @@ func close_func(ls *LexState) {
 	leaveblock(fs)
 	luaM_reallocvector(L, f.code, uint(f.sizecode), uint(fs.pc), Instruction(0))
 	f.sizecode = fs.pc
-	//  luaM_reallocvector(L, f->lineinfo, f->sizelineinfo, fs->pc, int);
-	//  f->sizelineinfo = fs->pc;
+	luaM_reallocvector(L, f.lineinfo, uint(f.sizelineinfo), uint(fs.pc), int(0))
+	f.sizelineinfo = fs.pc
 	//  luaM_reallocvector(L, f->k, f->sizek, fs->nk, TValue);
 	//  f->sizek = fs->nk;
 	//  luaM_reallocvector(L, f->p, f->sizep, fs->np, Proto *);
@@ -190,6 +190,7 @@ func mainfunc(ls *LexState, fs *FuncState) {
 	glog.Infoln(ls)
 	statlist(ls) /* parse main body */
 	check(ls, TK_EOS)
+	glog.Infoln(ls.fs.bl)
 	close_func(ls)
 }
 

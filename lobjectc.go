@@ -85,3 +85,20 @@ func luaO_pushvfstring(L *lua_State, fmt string, va_list []interface{}) string {
 func luaO_pushfstring(L *lua_State, fmt string, argp ...interface{}) string {
 	return luaO_pushvfstring(L, fmt, argp)
 }
+func luaO_chunkid(out []byte, source []byte, bufflen size_t) {
+	var l size_t = strlen(source)
+	if source[0] == '=' {
+		if l <= bufflen {
+			copy(out, source[1:l])
+		} else {
+			//addstr
+
+		}
+	} else if source[0] == '@' {
+		if l <= bufflen {
+			copy(out, source[1:l])
+		}
+	} else {
+		//var nl []byte = strchr(source,'\n')
+	}
+}
